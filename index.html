@@ -1,0 +1,392 @@
+<!doctype html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+        <title>eMMC Hacking 2017</title>
+
+		<link rel="stylesheet" href="css/reveal.css">
+		<link rel="stylesheet" href="css/theme/moon.css">
+
+		<!-- Theme used for syntax highlighting of code -->
+		<link rel="stylesheet" href="lib/css/zenburn.css">
+
+		<!-- Printing and PDF exports -->
+		<script>
+			var link = document.createElement( 'link' );
+			link.rel = 'stylesheet';
+			link.type = 'text/css';
+			link.href = window.location.search.match( /print-pdf/gi ) ? 'css/print/pdf.css' : 'css/print/paper.css';
+			document.getElementsByTagName( 'head' )[0].appendChild( link );
+		</script>
+
+        <style>
+.align {
+    display: inline-block;
+    margin: auto;
+    text-align: left;
+}
+
+section img.plain {
+    background: none !important;
+}
+        </style>
+	</head>
+	<body>
+		<div class="reveal">
+			<div class="slides">
+                <section x-data-background-image="resources/chip_sketch.png">
+                    <h1><span style='text-transform:none;'>e</span>MMC Hacking</h1>
+                    <h3 style='text-transform:none;'>(or: how I fixed long dead Galaxy S3 phones)</h3>
+                    Oran Avraham<br />
+                    December 2017
+                </section>
+
+                <section data-markdown>
+                    <textarea data-template>
+                        ## Who am I?
+                        - Security researcher based in Israel
+                        - Previously worked on openiBoot
+                        - CTF player with Pasten
+                    </textarea>
+                </section>
+
+                <section data-markdown>
+                    <textarea data-template>
+                        ## "Sudden Death Syndrome"
+
+                        Back in late 2012, Samsung Galaxy S3 phones started dying with no apparent reason <!-- .element: class="fragment" -->
+
+                        If you're lucky, phone boots into bootloader <!-- .element: class="fragment" -->
+
+                        Otherwise, it's just bricked <!-- .element: class="fragment" -->
+
+                        Lots of rants in forums <!-- .element: class="fragment" -->
+                    </textarea>
+                </section>
+
+                <section>
+                    <img class="stretch" src="resources/xdarant.png" />
+                </section>
+
+                <section>
+                    <h2>Spoiler alert: they did</h2>
+                    <span class="fragment">(Well, kind of...)</span>
+                </section>
+
+                <section data-background-image="resources/phone_diag.jpg">
+                    <h1 style="color: #333333">Diagnosis</h1>
+                </section>
+
+                <section>
+                    <h2>This is a working S3.</h2>
+                    <img class="plain stretch" src="resources/s3-working.png" />
+                </section>
+
+                <section data-background="resources/deadparrot.jpg">
+                    <h2 style="color: #fd4956">And this one is dead.</h2>
+                </section>
+
+                <section>
+                    <h2>No, seriously. This one.</h2>
+                    <img class="plain stretch" src="resources/s3-black.png" />
+                </section>
+
+                <section>
+                    <h2>If you're lucky, you get this.</h2>
+                    <img class="plain stretch" src="resources/s3-booting.png" />
+                </section>
+
+                <section>
+                    <h2>Or maybe this.</h2>
+                    <img class="plain stretch" src="resources/s3-lpm.png" />
+                </section>
+
+                <section>
+                    <h2>You also get "download mode".</h2>
+                    <img class="plain stretch" src="resources/s3-warning.png" />
+                </section>
+
+                <section>
+                    <h2>You also get "download mode".</h2>
+                    <img class="plain stretch" src="resources/s3-download.png" />
+                </section>
+
+                <section>
+                    <!--<h2>Samsung responds</h2>-->
+                    Then, samsung released a patch.
+                    <pre><code class="cpp" data-trim data-noescape>
+    if (!strncmp(host->card->cid.prod_name, "VTU00M", 6) &&
+        (host->card->cid.prod_rev == 0xf1) &&
+        (<span class="fragment highlight-red">mmc_start_movi_smart</span>(host->card) == 0x2))
+        host->card->movi_ops = 0x2;
+
+    if (host->card->movi_ops == 0x2) {
+        err = <span class="fragment highlight-red">mmc_start_movi_operation</span>(host->card);
+        if (err) {
+            pr_warning("%s: movi operation is failed\n",
+                            mmc_hostname(host));
+            goto remove_card;
+        }
+    } 
+                    </code></pre>
+                </section>
+
+                <section>
+                    <pre><code class="cpp" data-trim data-noescape>
+int mmc_start_movi_smart(struct mmc_card *card)
+{
+    err = mmc_movi_cmd(card->host, 0xEFAC62EC);
+    err = mmc_movi_cmd(card->host, 0x0000CCEE);
+    err = mmc_movi_read_req(card, (void *)data_buf, 0x1000, 1);
+    err = mmc_movi_cmd(card->host, 0xEFAC62EC);
+    err = mmc_movi_cmd(card->host, 0x00DECCEE);
+    date = ((data_buf[327] << 24) | ...
+
+    if (<span class="fragment highlight-red">date</span> !=  0x20120413) {
+        err = -1;
+        return err;
+    }
+    return 0x2;
+} 
+                    </code></pre>
+                    <code>mmc_movi_cmd</code> is basically eMMC CMD62
+                </section>
+
+<!--
+                <section data-background="resources/picard.jpg">
+                    <div class="stretch" style="-webkit-text-stroke:2px black">
+                        <h2>WHAT THE FUCK</h2>
+                        <h2 style="position:absolute;bottom:0;text-align:center;width:100%">ARE ALL THESE NUMBERS?</h2>
+                    </div>
+                </section>
+
+                <section>
+                    <h2>There's more...</h2>
+                </section>
+-->
+
+                <section>
+                    <pre style="width:100%"><code class="cpp" data-trim data-noescape>
+int mmc_start_movi_operation(struct mmc_card *card)
+{
+    mmc_movi_cmd(card->host, 0xEFAC62EC);
+    mmc_movi_cmd(card->host, 0x10210000);
+    mmc_movi_erase_cmd(card->host, 0x00040300, 0x4A03B510); <span class="fragment">// 10 B5...</span>
+    mmc_movi_erase_cmd(card->host, 0x00040304, 0x28004790);
+    mmc_movi_erase_cmd(card->host, 0x00040308, 0xE7FED100);
+    mmc_movi_erase_cmd(card->host, 0x0004030C, 0x0000BD10);
+    mmc_movi_erase_cmd(card->host, 0x00040310, 0x00059D73);
+    mmc_movi_erase_cmd(card->host, 0x0005C7EA, 0xFD89F7E3);
+    mmc_movi_cmd(card->host, 0xEFAC62EC);
+    mmc_movi_cmd(card->host, 0x00DECCEE);
+} 
+                    </code></pre>
+                </section>
+
+                <section>
+                    <h2>This is an eMMC...</h2>
+                    <img src="resources/emmc-finger.jpg" />
+                    <p class="fragment">(next to a Thumb™)</p>
+                </section>
+
+                <section data-background="resources/morpheus.jpg">
+                    <div class="stretch" style="-webkit-text-stroke:2px black">
+                        <h2>WHAT IF I TOLD YOU</h2>
+                        <h2 style="position:absolute;bottom:0;text-align:center;width:100%">THERE'S AN ARM INSIDE YOUR EMMC</h2>
+                    </div>
+                </section>
+
+                <section>
+                    <h2>Lo and behold...</h2>
+                    Here comes Samsung's patch.<br />
+                    <span class="fragment">Please prepare your C skillz.</span>
+                </section>
+
+                <section>
+                    <img src="resources/patch-disasm.png" height="400px" /><br />
+                    <pre><code class="cpp" data-trim data-noescape>
+                    void sub_40300()
+                    {
+                        if (!sub_59D72())
+                            while (1);
+                    }
+                    </code></pre>
+                </section>
+
+                <section>
+                    <h2>The other patch</h2>
+                    <pre><code class="arm" data-trim>
+                    0x5C7EA:    BL 0x40300
+                    </code></pre>
+                    Essentially a <code>jmp</code> to the first patch.
+                </section>
+
+                <section data-background="resources/fingerquotes.jpg">
+                    <div class="stretch" style="-webkit-text-stroke:2px black">
+                        <h2>DEAR S3 CUSTOMERS</h2>
+                        <h2 style="position:absolute;bottom:0;text-align:center;width:100%">WE "FIXED" IT</h2>
+                    </div>
+                </section>
+
+                <section>
+                    <img src="resources/freeze.png" />
+
+                    <blockquote class="fragment" style="width:100%" cite="https://forum.xda-developers.com/galaxy-s3/general/ultimate-galaxy-s3-unusual-freezing-t2133401">
+                        Galaxy S3 <u>freezing</u> with <u>lockups</u>, <u>screen not responding</u>...<br />
+                        and ending up with <u>unsual rebooting</u> and <u>bootlooping</u>...
+                        Angry S3 users reporting this problem...<br />
+                        Galaxy S3 keeps freezing every 5 mins (50+ freezes a day)<br />
+                    </blockquote>
+                </section>
+
+                <section>
+                    So I Googled <code>0xEFAC62EC 0x10210000</code>
+                    <pre class="fragment"><code class="cpp" data-trim>
+    mmc_movi_vendor_cmd(card, 0xEFAC62EC);
+    mmc_movi_vendor_cmd(card, 0x10210000);
+    mmc_movi_erase_cmd(card, 0x0004DD9C, 0x000000FF);
+    mmc_movi_vendor_cmd(card, 0xEFAC62EC);
+    mmc_movi_vendor_cmd(card, 0x00DECCEE);
+                    </code></pre>
+                    <p class="fragment">But there was something else afterwards...</p>
+                </section>
+
+                <section>
+                    <pre><code class="cpp" data-trim>
+#ifdef TEST_MMC_FW_PATCHING
+    mmc_movi_vendor_cmd(card, 0xEFAC62EC);
+    mmc_movi_vendor_cmd(card, 0x10210002);
+    mmc_movi_erase_cmd(card, 0x0004DD9C, 0x00000004);
+    mmc_movi_read_cmd(card, (u8 *)buffer);
+    pr_debug("buffer[0] is 0x%x\n", *(u8 *)buffer);
+    mmc_movi_vendor_cmd(card, 0xEFAC62EC);
+    mmc_movi_vendor_cmd(card, 0x00DECCEE);
+#endif
+                    </code></pre>
+                </section>
+
+                <section data-background="resources/allthememe.jpg">
+                </section>
+
+                <section>
+                    <pre><code class="cpp" data-trim>
+for (unsigned addr = 0x40000; addr <= 0x80000; addr += 4) {
+    mmc_movi_vendor_cmd(card, 0xEFAC62EC);
+    mmc_movi_vendor_cmd(card, 0x10210002);
+    mmc_movi_erase_cmd(card, addr, 0x00000004);
+    mmc_movi_read_cmd(card, (u8 *)buffer);
+    mmc_movi_vendor_cmd(card, 0xEFAC62EC);
+    mmc_movi_vendor_cmd(card, 0x00DECCEE);
+
+    write(outfd, buffer, 4);
+}
+                    </code></pre>
+                </section>
+
+                <section>
+                    Luckily for me, there were strings in the firmware.
+                </section>
+
+                <section>
+                    Luckily for me, there <i>was a string</i> in the firmware.
+                </section>
+
+                <section>
+                    <pre><code>"REL_ASSERT : (PC[%x] SP[%x] LR[%x])\n"</code></pre>
+                </section>
+
+                <section data-background="resources/img-000.png">
+                    <h2 style="color:#333;">eMMC Internals</h2>
+                </section>
+
+                <section>
+                    <h2>Normal memory</h2>
+
+                    <ul>
+                        <li>Read: <span class="fragment">reads data</span></li>
+                        <li>Write: <span class="fragment">writes data</span></li>
+                    </ul>
+                </section>
+
+                <section>
+                    <h2>NAND flash memory</h2>
+
+                    <ul>
+                        <li>Read: <span class="fragment">reads data</span></li>
+                        <li>Write: <span class="fragment"><i>kind of</i> writes data (1&#8594;0)</span></li>
+                        <li>Erase: <span class="fragment">erases a whole <i>erase-block</i> (0&#8594;1)</span></li>
+                    </ul>
+                    
+                    <p class="fragment">Erase-blocks have a limited <i>program/erase</i> cycles</p>
+                </section>
+
+                <section>
+                    <h2>Flash Translation Layer</h2>
+
+                    <p>Firmware is responsible for:</p>
+                    <ul>
+                        <li>Wear leveling</li>
+                        <li>Bad block management</li>
+                        <li>Some of the eMMC bus communication</li>
+                    </ul>
+
+                    <img class="fragment" style="height:280px" src="resources/ftl.png" />
+                </section>
+
+                <section>
+                    <h2> VTU00M 0<span style="text-transform:none">x</span>F1 bug</h2>
+
+                    <div class="align">
+                        <p>FTL metadata gets corrupted once</p>
+                        <p class="fragment">&#8658; FTL raises a CPU exception on boot</p>
+                        <p class="fragment">&#8658; CPU enters an infinite loop</p>
+                        <p class="fragment">&#8658; eMMC is essentially dead</p>
+                        <br/>
+                        <p class="fragment">Samsung's patch: Metadata about to get corrupted? Halt CPU!</p>
+                    </div>
+                </section>
+
+                <section>
+                    <h2>Reversing the firmware</h2>
+
+                    <p>CPU seems to be ARM Cortex-M3 (only Thumb!)</p>
+                    <p class="fragment">Found <code>0xEFAC62EC</code></p>
+                    <p class="fragment">Found a table of 64 entries - command handlers</p>
+                    <p class="fragment">Worked my way to reverse most of the relevant code</p>
+                    <p class="fragment">A <b>lot</b> of MMIO registers of unknown hardware</p>
+                </section>
+
+                <section>
+                    <h2>Memory layout</h2>
+
+                    <img class="plain stretch" src="resources/memory-layout.png" />
+                </section>
+
+                <section>
+                    <h2>Boot ROM</h2>
+                    <p>Initializes hardware and loads firmware from flash</p>
+                    <p>Has its own machinery for eMMC commands<br/>(when firmware loading fails)</p>
+                </section>
+			</div>
+		</div>
+
+		<script src="lib/js/head.min.js"></script>
+		<script src="js/reveal.js"></script>
+
+		<script>
+			Reveal.initialize({
+				dependencies: [
+					{ src: 'plugin/markdown/marked.js' },
+					{ src: 'plugin/markdown/markdown.js' },
+					{ src: 'plugin/notes/notes.js', async: true },
+					{ src: 'plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } }
+                ],
+                history: true,
+                transition: 'fade',
+                transitionSpeed: 'fast',
+			});
+		</script>
+	</body>
+</html>
