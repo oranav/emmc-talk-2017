@@ -52,11 +52,13 @@ section img.plain {
                     </textarea>
                 </section>
 
+                <section data-background="resources/deadparrot.jpg">
+                    <h2 style="color:#fd4956">"Sudden Death Syndrome"</h2>
+                </section>
+
                 <section data-markdown>
                     <textarea data-template>
-                        ## "Sudden Death Syndrome"
-
-                        Back in late 2012, Samsung Galaxy S3 phones started dying with no apparent reason <!-- .element: class="fragment" -->
+                        Back in late 2012, Samsung Galaxy S3 phones started dying with no apparent reason
 
                         If you're lucky, phone boots into bootloader <!-- .element: class="fragment" -->
 
@@ -84,12 +86,8 @@ section img.plain {
                     <img class="plain stretch" src="resources/s3-working.png" />
                 </section>
 
-                <section data-background="resources/deadparrot.jpg">
-                    <h2 style="color: #fd4956">And this one is dead.</h2>
-                </section>
-
                 <section>
-                    <h2>No, seriously. This one.</h2>
+                    <h2>And this one is dead.</h2>
                     <img class="plain stretch" src="resources/s3-black.png" />
                 </section>
 
@@ -114,73 +112,106 @@ section img.plain {
                 </section>
 
                 <section>
-                    <!--<h2>Samsung responds</h2>-->
-                    Then, samsung released a patch.
+                    <p>Then, samsung dropped a patch.</p>
+                    <pre><code class="cpp" data-trim data-noescape>
+    if (!strncmp(host->card->cid.prod_name, "VTU00M", 6) &&
+        (host->card->cid.prod_rev == 0xf1) &&
+        (mmc_start_movi_smart(host->card) == 0x2))
+        host->card->movi_ops = 0x2;
+
+    if (host->card->movi_ops == 0x2)
+        mmc_start_movi_operation(host->card);
+                    </code></pre>
+
+                    <p><small>
+                        <a href="https://github.com/CyanogenMod/android_kernel_samsung_smdk4412/commit/da8461692362317a8ffce4d4646953985fcf4e1d">mmc: Soft-patch MoviNAND VTU00M (16GB) eMMC failure</a><br />
+                        <i>Linux/drivers/mmc/core/mmc.c</i>
+                    </small></p>
+                </section>
+
+                <section data-background="resources/eMMC.jpg">
+                    <h2 style="color:#fd4956"><span style="text-transform:none;">e</span>MMC bus introduction</h2>
+                </section>
+
+                <section>
+                    <p>eMMC is basically SD card in BGA form</p>
+                    <p>
+                        <img src="resources/emmc-reader-1.jpg" height="150px" style="margin-right:20px" /><img src="resources/emmc-reader-2.jpg" height="150px" /><br/>
+                        <small><i>HardKernel ODROID eMMC reader board</i></small>
+                    </p>
+                    <p>Essentially a NAND flash chip with convenient bus</p>
+                </section>
+
+                <section>
+                    <div class="align">
+                        <p>
+                            64 commands (CMD0, CMD1, ..., CMD63), e.g.:
+                            <small><ul>
+                                <li>CMD17: READ_SINGLE_BLOCK</li>
+                                <li>CMD24: WRITE_BLOCK</li>
+                                <li>CMD38: ERASE</li>
+                            </ul></small>
+                        </p>
+                        <p>32-bit argument</p>
+                        <p class="fragment" data-fragment-index="0">Categorized into classes</p>
+                        <p class="fragment" data-fragment-index="1">Class 8 contains an interesting set of commands</p>
+                        <img src="resources/cmd60-63.png" class="fragment" data-fragment-index="1" />
+                    </div>
+                </section>
+
+                <section>
+                    <p>Back to the patch</p>
                     <pre><code class="cpp" data-trim data-noescape>
     if (!strncmp(host->card->cid.prod_name, "VTU00M", 6) &&
         (host->card->cid.prod_rev == 0xf1) &&
         (<span class="fragment highlight-red">mmc_start_movi_smart</span>(host->card) == 0x2))
         host->card->movi_ops = 0x2;
 
-    if (host->card->movi_ops == 0x2) {
-        err = <span class="fragment highlight-red">mmc_start_movi_operation</span>(host->card);
-        if (err) {
-            pr_warning("%s: movi operation is failed\n",
-                            mmc_hostname(host));
-            goto remove_card;
-        }
-    } 
+    if (host->card->movi_ops == 0x2)
+        <span class="fragment highlight-red">mmc_start_movi_operation</span>(host->card);
                     </code></pre>
+
+                    <p><small>
+                        <a href="https://github.com/CyanogenMod/android_kernel_samsung_smdk4412/commit/da8461692362317a8ffce4d4646953985fcf4e1d">mmc: Soft-patch MoviNAND VTU00M (16GB) eMMC failure</a><br />
+                        <i>Linux/drivers/mmc/core/mmc.c</i>
+                    </small></p>
                 </section>
 
                 <section>
                     <pre><code class="cpp" data-trim data-noescape>
 int mmc_start_movi_smart(struct mmc_card *card)
 {
-    err = mmc_movi_cmd(card->host, 0xEFAC62EC);
-    err = mmc_movi_cmd(card->host, 0x0000CCEE);
-    err = mmc_movi_read_req(card, (void *)data_buf, 0x1000, 1);
-    err = mmc_movi_cmd(card->host, 0xEFAC62EC);
-    err = mmc_movi_cmd(card->host, 0x00DECCEE);
+    <span class="fragment highlight-red" data-fragment-index="0">mmc_movi_cmd</span>(card->host, 0xEFAC62EC);
+    <span class="fragment highlight-red" data-fragment-index="0">mmc_movi_cmd</span>(card->host, 0x0000CCEE);
+    mmc_movi_read_req(card, (void *)data_buf, 0x1000, 1);
+    <span class="fragment highlight-red" data-fragment-index="0">mmc_movi_cmd</span>(card->host, 0xEFAC62EC);
+    <span class="fragment highlight-red" data-fragment-index="0">mmc_movi_cmd</span>(card->host, 0x00DECCEE);
     date = ((data_buf[327] << 24) | ...
 
-    if (<span class="fragment highlight-red">date</span> !=  0x20120413) {
+    if (date !=  0x20120413) {
         err = -1;
         return err;
     }
     return 0x2;
 } 
                     </code></pre>
-                    <code>mmc_movi_cmd</code> is basically eMMC CMD62
+                    <span class="fragment" data-fragment-index="0"><code>mmc_movi_cmd</code> is basically eMMC CMD62</span>
                 </section>
-
-<!--
-                <section data-background="resources/picard.jpg">
-                    <div class="stretch" style="-webkit-text-stroke:2px black">
-                        <h2>WHAT THE FUCK</h2>
-                        <h2 style="position:absolute;bottom:0;text-align:center;width:100%">ARE ALL THESE NUMBERS?</h2>
-                    </div>
-                </section>
-
-                <section>
-                    <h2>There's more...</h2>
-                </section>
--->
 
                 <section>
                     <pre style="width:100%"><code class="cpp" data-trim data-noescape>
 int mmc_start_movi_operation(struct mmc_card *card)
 {
-    mmc_movi_cmd(card->host, 0xEFAC62EC);
-    mmc_movi_cmd(card->host, 0x10210000);
-    mmc_movi_erase_cmd(card->host, 0x00040300, 0x4A03B510); <span class="fragment">// 10 B5...</span>
-    mmc_movi_erase_cmd(card->host, 0x00040304, 0x28004790);
-    mmc_movi_erase_cmd(card->host, 0x00040308, 0xE7FED100);
-    mmc_movi_erase_cmd(card->host, 0x0004030C, 0x0000BD10);
-    mmc_movi_erase_cmd(card->host, 0x00040310, 0x00059D73);
-    mmc_movi_erase_cmd(card->host, 0x0005C7EA, 0xFD89F7E3);
-    mmc_movi_cmd(card->host, 0xEFAC62EC);
-    mmc_movi_cmd(card->host, 0x00DECCEE);
+    mmc_movi_cmd(card-&gt;host, 0xEFAC62EC);
+    mmc_movi_cmd(card-&gt;host, 0x10210000);
+    <span class="fragment highlight-red" data-fragment-index="0">mmc_movi_erase_cmd</span>(card-&gt;host, 0x00040300, 0x4A03B510); <span class="fragment">// 10 B5...</span>
+    <span class="fragment highlight-red" data-fragment-index="0">mmc_movi_erase_cmd</span>(card-&gt;host, 0x00040304, 0x28004790);
+    <span class="fragment highlight-red" data-fragment-index="0">mmc_movi_erase_cmd</span>(card-&gt;host, 0x00040308, 0xE7FED100);
+    <span class="fragment highlight-red" data-fragment-index="0">mmc_movi_erase_cmd</span>(card-&gt;host, 0x0004030C, 0x0000BD10);
+    <span class="fragment highlight-red" data-fragment-index="0">mmc_movi_erase_cmd</span>(card-&gt;host, 0x00040310, 0x00059D73);
+    <span class="fragment highlight-red" data-fragment-index="0">mmc_movi_erase_cmd</span>(card-&gt;host, 0x0005C7EA, 0xFD89F7E3);
+    mmc_movi_cmd(card-&gt;host, 0xEFAC62EC);
+    mmc_movi_cmd(card-&gt;host, 0x00DECCEE);
 } 
                     </code></pre>
                 </section>
@@ -188,20 +219,20 @@ int mmc_start_movi_operation(struct mmc_card *card)
                 <section>
                     <h2>This is an eMMC...</h2>
                     <img src="resources/emmc-finger.jpg" />
-                    <p class="fragment">(next to a Thumb™)</p>
+                    <p>(next to a Thumb™)</p>
                 </section>
 
-                <section data-background="resources/morpheus.jpg">
+                <!--<section data-background="resources/morpheus.jpg">
                     <div class="stretch" style="-webkit-text-stroke:2px black">
                         <h2>WHAT IF I TOLD YOU</h2>
                         <h2 style="position:absolute;bottom:0;text-align:center;width:100%">THERE'S AN ARM INSIDE YOUR EMMC</h2>
                     </div>
-                </section>
+                </section>-->
 
                 <section>
                     <h2>Lo and behold...</h2>
                     Here comes Samsung's patch.<br />
-                    <span class="fragment">Please prepare your C skillz.</span>
+                    Please prepare your C skillz.
                 </section>
 
                 <section>
@@ -243,36 +274,44 @@ int mmc_start_movi_operation(struct mmc_card *card)
 
                 <section>
                     So I Googled <code>0xEFAC62EC 0x10210000</code>
-                    <pre class="fragment"><code class="cpp" data-trim>
+                    <pre class="fragment" data-fragment-index="0"><code class="cpp" data-trim>
     mmc_movi_vendor_cmd(card, 0xEFAC62EC);
     mmc_movi_vendor_cmd(card, 0x10210000);
     mmc_movi_erase_cmd(card, 0x0004DD9C, 0x000000FF);
     mmc_movi_vendor_cmd(card, 0xEFAC62EC);
     mmc_movi_vendor_cmd(card, 0x00DECCEE);
                     </code></pre>
-                    <p class="fragment">But there was something else afterwards...</p>
+
+                    <p class="fragment" data-fragment-index="0"><small>
+                        <a href="https://android.googlesource.com/kernel/omap.git/+/90f1659b5a07c077d37dee4e089027f4e0b05ad9">[MMC] Patch the firmware of certain Samsung emmc parts to fix a bug</a><br />
+                        <i>Linux/drivers/mmc/core/quirks.c</i><br />
+                    </small></p>
+
+                    <p class="fragment" data-fragment-index="1">But there was something else afterwards...</p>
                 </section>
 
                 <section>
-                    <pre><code class="cpp" data-trim>
+                    <pre><code class="cpp" data-trim data-noescape>
 #ifdef TEST_MMC_FW_PATCHING
     mmc_movi_vendor_cmd(card, 0xEFAC62EC);
-    mmc_movi_vendor_cmd(card, 0x10210002);
+    mmc_movi_vendor_cmd(card, 0x10210002);<span class="fragment">  // this is a 2</span>
     mmc_movi_erase_cmd(card, 0x0004DD9C, 0x00000004);
-    mmc_movi_read_cmd(card, (u8 *)buffer);
+    <span class="fragment highlight-red">mmc_movi_read_cmd</span>(card, (u8 *)buffer);
     pr_debug("buffer[0] is 0x%x\n", *(u8 *)buffer);
     mmc_movi_vendor_cmd(card, 0xEFAC62EC);
     mmc_movi_vendor_cmd(card, 0x00DECCEE);
 #endif
                     </code></pre>
+
+                    <p class="fragment">Maybe this is Samsung's way of <i>reading the RAM</i>?</p>
                 </section>
 
-                <section data-background="resources/allthememe.jpg">
-                </section>
+                <!--<section data-background="resources/allthememe.jpg">
+                </section>-->
 
                 <section>
                     <pre><code class="cpp" data-trim>
-for (unsigned addr = 0x40000; addr <= 0x80000; addr += 4) {
+for (unsigned addr = 0; addr &lt;= 0x80000; addr += 4) {
     mmc_movi_vendor_cmd(card, 0xEFAC62EC);
     mmc_movi_vendor_cmd(card, 0x10210002);
     mmc_movi_erase_cmd(card, addr, 0x00000004);
@@ -286,66 +325,14 @@ for (unsigned addr = 0x40000; addr <= 0x80000; addr += 4) {
                 </section>
 
                 <section>
-                    Luckily for me, there were strings in the firmware.
+                    Success! Looks like a firmware!
                 </section>
 
                 <section>
-                    Luckily for me, there <i>was a string</i> in the firmware.
-                </section>
-
-                <section>
-                    <pre><code>"REL_ASSERT : (PC[%x] SP[%x] LR[%x])\n"</code></pre>
-                </section>
-
-                <section data-background="resources/img-000.png">
-                    <h2 style="color:#333;">eMMC Internals</h2>
-                </section>
-
-                <section>
-                    <h2>Normal memory</h2>
-
-                    <ul>
-                        <li>Read: <span class="fragment">reads data</span></li>
-                        <li>Write: <span class="fragment">writes data</span></li>
-                    </ul>
-                </section>
-
-                <section>
-                    <h2>NAND flash memory</h2>
-
-                    <ul>
-                        <li>Read: <span class="fragment">reads data</span></li>
-                        <li>Write: <span class="fragment"><i>kind of</i> writes data (1&#8594;0)</span></li>
-                        <li>Erase: <span class="fragment">erases a whole <i>erase-block</i> (0&#8594;1)</span></li>
-                    </ul>
-                    
-                    <p class="fragment">Erase-blocks have a limited <i>program/erase</i> cycles</p>
-                </section>
-
-                <section>
-                    <h2>Flash Translation Layer</h2>
-
-                    <p>Firmware is responsible for:</p>
-                    <ul>
-                        <li>Wear leveling</li>
-                        <li>Bad block management</li>
-                        <li>Some of the eMMC bus communication</li>
-                    </ul>
-
-                    <img class="fragment" style="height:280px" src="resources/ftl.png" />
-                </section>
-
-                <section>
-                    <h2> VTU00M 0<span style="text-transform:none">x</span>F1 bug</h2>
-
-                    <div class="align">
-                        <p>FTL metadata gets corrupted once</p>
-                        <p class="fragment">&#8658; FTL raises a CPU exception on boot</p>
-                        <p class="fragment">&#8658; CPU enters an infinite loop</p>
-                        <p class="fragment">&#8658; eMMC is essentially dead</p>
-                        <br/>
-                        <p class="fragment">Samsung's patch: Metadata about to get corrupted? Halt CPU!</p>
-                    </div>
+                    <h2>Reversing the firmware?</h2>
+                    The firmware contained <span class="fragment strike" data-fragment-index="0">strings!</span>
+                    <span class="fragment" data-fragment-index="0">a string :-(</span></p>
+                    <pre class="fragment"><code>"REL_ASSERT : (PC[%x] SP[%x] LR[%x])\n"</code></pre>
                 </section>
 
                 <section>
@@ -364,10 +351,106 @@ for (unsigned addr = 0x40000; addr <= 0x80000; addr += 4) {
                     <img class="plain stretch" src="resources/memory-layout.png" />
                 </section>
 
+                <section data-background="resources/chip_sketch.png">
+                    <h2 style="color:#333;">eMMC Internals</h2>
+                </section>
+
+                <section>
+                    <h2>Normal storage</h2>
+
+                    <ul>
+                        <li>Read: <span class="fragment">read data</span></li>
+                        <li>Write: <span class="fragment">write data</span></li>
+                    </ul>
+                </section>
+
+                <section>
+                    <h2>NAND flash storage</h2>
+
+                    <ul>
+                        <li>Read: <span class="fragment">read data</span></li>
+                        <li>Write: <span class="fragment">turn off bits (1&#8594;0)</span></li>
+                        <li>Erase: <span class="fragment">erase a whole <i>erase-block</i> (0&#8594;1)</span></li>
+                    </ul>
+                    
+                    <p class="fragment">Erase-blocks have a limited <i>program/erase</i> cycles</p>
+                </section>
+
+                <section>
+                    <h2>Flash translation layer</h2>
+
+                    <p>Firmware is responsible for:</p>
+                    <ul>
+                        <li>Wear leveling</li>
+                        <li>Bad block management</li>
+                        <li>eMMC bus communication</li>
+                    </ul>
+
+                    <img style="height:280px" src="resources/ftl.png" />
+                </section>
+
+                <section>
+                    <h2> VTU00M 0<span style="text-transform:none">x</span>F1 bug</h2>
+
+                    <div class="align">
+                        <p>FTL metadata gets corrupted once</p>
+                        <p class="fragment">&#8658; On each boot, FTL raises a CPU exception</p>
+                        <p class="fragment">&#8658; CPU enters an infinite loop</p>
+                        <p class="fragment">&#8658; eMMC is essentially dead</p>
+                        <br/>
+                        <p class="fragment">Samsung's patch: Metadata about to get corrupted? Halt CPU!</p>
+                    </div>
+                </section>
+
+                <section data-background="resources/nospoon.jpg">
+                    <div class="stretch" style="-webkit-text-stroke:2px black">
+                        <h2>DO NOT TRY TO FIX THE BUG...</h2>
+                        <h2 style="position:absolute;bottom:0;text-align:center;width:100%">INSTEAD, REALIZE THERE IS NO BUG</h2>
+                    </div>
+                </section>
+
                 <section>
                     <h2>Boot ROM</h2>
-                    <p>Initializes hardware and loads firmware from flash</p>
+                    <p>Initializes hardware and loads firmware <b>from flash</b></p>
                     <p>Has its own machinery for eMMC commands<br/>(when firmware loading fails)</p>
+                    <p>Basically a stripped down firmware (no FTL)</p>
+                </section>
+
+                <section>
+                    <p>If we could ever talk to the Boot ROM, we might be able to recover the device!</p>
+                    <p class="fragment">However, firmware loading actually <i>succeeds</i></p>
+                    <p class="fragment">Firmware executes, enters a loop &#8658; no chance</p>
+                    <p class="fragment"><i>Right?</i></p>
+                </section>
+
+                <section>
+                    <p>On boot (<code>sub_7DBC</code>), a timer is being set for 35ms</p>
+                    <p>If during this period, some interrupt fires,<br/>
+                    some MMIO value is compared to <code>0x69FF87A9</code></p>
+                    <p>In that case - firmware loading is skipped!</p>
+                </section>
+
+                <section>
+                    <h3>Repeat for x:</h3>
+                    <ol>
+                        <li>Power off eMMC</li>
+                        <li class="fragment">Power on eMMC</li>
+                        <li class="fragment">Quickly send CMDx(<code>0x69FF87A9</code>)</li>
+                        <li class="fragment">Wait 200ms</li>
+                        <li class="fragment">Try to send any command supported by Boot ROM</li>
+                    </ol>
+
+                    <p class="fragment"><strong>*Bingo*</strong> CMD1(0x69FF87A9) works!</p>
+                </section>
+
+                <section>
+                    <h3>Wait, what?</h3>
+
+                    How do we even talk with the eMMC?
+                </section>
+
+                <section data-background="resources/s3-download.png">
+                    <h2 style="color:#fd4956">SBoot Exploitation</h2>
                 </section>
 			</div>
 		</div>
