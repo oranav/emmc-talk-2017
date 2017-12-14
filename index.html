@@ -450,7 +450,92 @@ for (unsigned addr = 0; addr &lt;= 0x80000; addr += 4) {
                 </section>
 
                 <section data-background="resources/s3-download.png">
-                    <h2 style="color:#fd4956">SBoot Exploitation</h2>
+                    <h2 style="color:#fd4956">sboot Exploitation</h2>
+                </section>
+
+                <section>
+                    <p>A friend of mine had a bricked S3 which <strong>loads sboot</strong></p>
+                    <p>eMMC has two partitions: boot and user</p>
+                    <p>Only user's metadata was corrupted</p>
+                    <p>I suspect this is a common scenario</p>
+                </section>
+
+                <section>
+                    <p>sboot has a DFU mode called "download mode"</p>
+                    <p>Protocol over USB; Loke &#x27f7; Odin</p>
+                    <p>Must exploit sboot to do anything</p>
+                </section>
+
+                <section>
+                    <pre class="stretch"><code class="cpp" data-trim data-noescape>
+      if (is_dump == 1)
+      {
+        int sz, data;
+
+        <span class="fragment highlight-red" data-fragment-index="0">part</span> = (pkt[11] &lt;&lt; 24) | ...;
+        sz = -500 * part + 0x2000;
+        if (sz &gt;= 500)
+          sz = 500;
+        send_packet(&amp;pit_buf[500 * <span class="fragment highlight-red" data-fragment-index="0">part</span>], sz);
+      }
+      else
+      {
+        <span class="fragment highlight-red" data-fragment-index="1">sz</span> = (pkt[11] &lt;&lt; 24) | ...;
+        reply_packet(pkt_type, 0);
+        read_packet(pit_buf, <span class="fragment highlight-red" data-fragment-index="1">sz</span>);
+        reply_packet(pkt_type, 0);
+      }
+                    </code></pre>
+                </section>
+
+                <section>
+                    <h2>Loke vulnerabilities</h2>
+                    <ol>
+                        <li>Heap relative read</li>
+                        <li>Heap overflow</li>
+                    </ol>
+                    <p>Eventually found out this is actually <strong>not a 0-day</strong></p>
+                    <p>Unpatched for S3, but silently fixed in recent devices</p>
+                </section>
+
+                <section>
+                    <h2>sboot heap implementation</h2>
+
+                    <p>*All* chunks are saved in circular doubly-linked list</p>
+                    <p>Choose first best fit</p>
+                    <p>Split chunks <strong>from the end</strong></p>
+                    <p>No security mitigations at all :-)</p>
+                </section>
+
+                <section>
+                    Illustration
+                </section>
+
+                <section>
+                    <h3>Exploitation strategy</h3>
+
+                    <p>Goal: achieve write-what-where</p>
+
+                    <ol class="align">
+                        <li>Figure out <code>buffer</code> address</li>
+                        <li>Fake a chunk header with arbitrary large size</li>
+                        <li>Upon malloc(sz): <br/><code><span style="color:#ff2c2d">addr</span> = chunk + <span style="color:#1b91ff">chunk-&gt;size</span> - sz</code></li>
+                        <li class="fragment">Set <code><span style="color:#1b91ff">chunk-&gt;size</span> = <span style="color:#ff2c2d">addr</span> - chunk + sz</code></li>
+                    </ol>
+                </section>
+
+                <section>
+                    Illustration?
+                </section>
+
+                <section>
+                    <h2>Details are boring</h2>
+
+                    <p>No NX-bit &#8658; Override USB function pointers with our buffer address</p>
+
+                    <p>Exploit is available in my GitHub account</p>
+
+                    <p><a href="https://www.github.com/Oranav">https://www.github.com/Oranav</a></p>
                 </section>
 			</div>
 		</div>
