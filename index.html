@@ -49,6 +49,10 @@ section img.plain {
                         - Security researcher based in Israel
                         - Previously worked on openiBoot
                         - CTF player with Pasten
+                        
+                        https://oranav.me
+
+                        Twitter: [@oranav](https://twitter.com/oranav)
                     </textarea>
                 </section>
 
@@ -164,7 +168,7 @@ section img.plain {
                     <pre><code class="cpp" data-trim data-noescape>
     if (!strncmp(host->card->cid.prod_name, "VTU00M", 6) &&
         (host->card->cid.prod_rev == 0xf1) &&
-        (<span class="fragment highlight-red">mmc_start_movi_smart</span>(host->card) == 0x2))
+        (<!--<span class="fragment highlight-red">-->mmc_start_movi_smart<!--</span>-->(host->card) == 0x2))
         host->card->movi_ops = 0x2;
 
     if (host->card->movi_ops == 0x2)
@@ -177,7 +181,7 @@ section img.plain {
                     </small></p>
                 </section>
 
-                <section>
+                <!--<section>
                     <pre><code class="cpp" data-trim data-noescape>
 int mmc_start_movi_smart(struct mmc_card *card)
 {
@@ -186,7 +190,7 @@ int mmc_start_movi_smart(struct mmc_card *card)
     mmc_movi_read_req(card, (void *)data_buf, 0x1000, 1);
     <span class="fragment highlight-red" data-fragment-index="0">mmc_movi_cmd</span>(card->host, 0xEFAC62EC);
     <span class="fragment highlight-red" data-fragment-index="0">mmc_movi_cmd</span>(card->host, 0x00DECCEE);
-    date = ((data_buf[327] << 24) | ...
+    date = /* read from data_buf */;
 
     if (date !=  0x20120413) {
         err = -1;
@@ -196,21 +200,21 @@ int mmc_start_movi_smart(struct mmc_card *card)
 } 
                     </code></pre>
                     <span class="fragment" data-fragment-index="0"><code>mmc_movi_cmd</code> is basically eMMC CMD62</span>
-                </section>
+                </section>-->
 
                 <section>
                     <pre style="width:100%"><code class="cpp" data-trim data-noescape>
 int mmc_start_movi_operation(struct mmc_card *card)
 {
-    mmc_movi_cmd(card-&gt;host, 0xEFAC62EC);
+    mmc_movi_cmd(card-&gt;host, 0xEFAC62EC);  <span class="fragment" data-fragment-index="1">// Enter secret backdoor mode</span>
     mmc_movi_cmd(card-&gt;host, 0x10210000);
-    <span class="fragment highlight-red" data-fragment-index="0">mmc_movi_erase_cmd</span>(card-&gt;host, 0x00040300, 0x4A03B510); <span class="fragment">// 10 B5...</span>
+    <span class="fragment highlight-red" data-fragment-index="0">mmc_movi_erase_cmd</span>(card-&gt;host, 0x00040300, 0x4A03B510);  <span class="fragment" data-fragment-index="2">// 10 B5...</span>
     <span class="fragment highlight-red" data-fragment-index="0">mmc_movi_erase_cmd</span>(card-&gt;host, 0x00040304, 0x28004790);
     <span class="fragment highlight-red" data-fragment-index="0">mmc_movi_erase_cmd</span>(card-&gt;host, 0x00040308, 0xE7FED100);
     <span class="fragment highlight-red" data-fragment-index="0">mmc_movi_erase_cmd</span>(card-&gt;host, 0x0004030C, 0x0000BD10);
     <span class="fragment highlight-red" data-fragment-index="0">mmc_movi_erase_cmd</span>(card-&gt;host, 0x00040310, 0x00059D73);
     <span class="fragment highlight-red" data-fragment-index="0">mmc_movi_erase_cmd</span>(card-&gt;host, 0x0005C7EA, 0xFD89F7E3);
-    mmc_movi_cmd(card-&gt;host, 0xEFAC62EC);
+    mmc_movi_cmd(card-&gt;host, 0xEFAC62EC);  <span class="fragment" data-fragment-index="1">// Leave secret backdoor mode</span>
     mmc_movi_cmd(card-&gt;host, 0x00DECCEE);
 } 
                     </code></pre>
@@ -417,7 +421,7 @@ for (unsigned addr = 0; addr &lt;= 0x80000; addr += 4) {
                 </section>
 
                 <section>
-                    <p>If we could ever talk to the Boot ROM, we might be able to recover the device!</p>
+                    <p>If we could ever talk to the boot ROM, we might be able to recover the device!</p>
                     <p class="fragment">However, firmware loading actually <i>succeeds</i></p>
                     <p class="fragment">Firmware executes, enters a loop &#8658; no chance</p>
                     <p class="fragment"><i>Right?</i></p>
@@ -425,36 +429,30 @@ for (unsigned addr = 0; addr &lt;= 0x80000; addr += 4) {
 
                 <section>
                     <p>On boot (<code>sub_7DBC</code>), a timer is being set for 35ms</p>
-                    <p>If during this period, some interrupt fires,<br/>
-                    some MMIO value is compared to <code>0x69FF87A9</code></p>
+                    <p>If during this period some interrupt fires - <br/>
+                    a value (MMIO) is compared to <code>0x69FF87A9</code></p>
                     <p>In that case - firmware loading is skipped!</p>
                 </section>
 
                 <section>
-                    <h3>Repeat for x:</h3>
-                    <ol>
-                        <li>Power off eMMC</li>
-                        <li class="fragment">Power on eMMC</li>
-                        <li class="fragment">Quickly send CMDx(<code>0x69FF87A9</code>)</li>
-                        <li class="fragment">Wait 200ms</li>
-                        <li class="fragment">Try to send any command supported by Boot ROM</li>
-                    </ol>
-
-                    <p class="fragment"><strong>*Bingo*</strong> CMD1(0x69FF87A9) works!</p>
+                    <img class="plain stretch" src="resources/emmc_boot.svg" />
                 </section>
 
                 <section>
                     <h3>Wait, what?</h3>
 
-                    How do we even talk with the eMMC?
-                </section>
-
-                <section data-background="resources/s3-download.png">
-                    <h2 style="color:#fd4956">sboot Exploitation</h2>
+                    <p>Phone is dead. How do we even talk with the eMMC?</p>
+                    <p>Sure, <i>I could've used a hardware mod</i>, however...</p>
                 </section>
 
                 <section>
-                    <p>A friend of mine had a bricked S3 which <strong>loads sboot</strong></p>
+                    <h2>Recap: If you're lucky, you get this.</h2>
+                    <img class="plain stretch" src="resources/s3-booting.png" />
+                    <p>But how?</p>
+                </section>
+
+                <section>
+                    <p>A friend had a bricked S3 which *<strong>does load</strong>* sboot</p>
                     <p>eMMC has two partitions: boot and user</p>
                     <p>Only user's metadata was corrupted</p>
                     <p>I suspect this is a common scenario</p>
@@ -463,24 +461,26 @@ for (unsigned addr = 0; addr &lt;= 0x80000; addr += 4) {
                 <section>
                     <p>sboot has a DFU mode called "download mode"</p>
                     <p>Protocol over USB; Loke &#x27f7; Odin</p>
-                    <p>Must exploit sboot to do anything</p>
+                    <p>No way of sending low-level eMMC commands</p>
+                </section>
+
+                <section data-background="resources/s3-download.png">
+                    <h2 style="color:#fd4956">sboot Exploitation</h2>
                 </section>
 
                 <section>
+                    <h3>Taken from sboot PIT packets handling</h3>
                     <pre class="stretch"><code class="cpp" data-trim data-noescape>
-      if (is_dump == 1)
-      {
-        int sz, data;
+      if (is_dump == 1) {
+        int sz, data, part;
 
-        <span class="fragment highlight-red" data-fragment-index="0">part</span> = (pkt[11] &lt;&lt; 24) | ...;
+        <span class="fragment highlight-red" data-fragment-index="0">part</span> = /* read from USB packet */;
         sz = -500 * part + 0x2000;
         if (sz &gt;= 500)
           sz = 500;
         send_packet(&amp;pit_buf[500 * <span class="fragment highlight-red" data-fragment-index="0">part</span>], sz);
-      }
-      else
-      {
-        <span class="fragment highlight-red" data-fragment-index="1">sz</span> = (pkt[11] &lt;&lt; 24) | ...;
+      } else {
+        <span class="fragment highlight-red" data-fragment-index="1">sz</span> = /* read from USB packet */;
         reply_packet(pkt_type, 0);
         read_packet(pit_buf, <span class="fragment highlight-red" data-fragment-index="1">sz</span>);
         reply_packet(pkt_type, 0);
@@ -489,7 +489,7 @@ for (unsigned addr = 0; addr &lt;= 0x80000; addr += 4) {
                 </section>
 
                 <section>
-                    <h2>Loke vulnerabilities</h2>
+                    <h2>sboot vulnerabilities</h2>
                     <ol>
                         <li>Heap relative read</li>
                         <li>Heap overflow</li>
@@ -528,17 +528,212 @@ for (unsigned addr = 0; addr &lt;= 0x80000; addr += 4) {
                     Illustration?
                 </section>
 
-                <section>
-                    <h2>Details are boring</h2>
+                <section data-markdown>
+                    <textarea data-template>
+                        ## Details are boring
 
-                    <p>No NX-bit &#8658; Override USB function pointers with our buffer address</p>
+                        No NX-bit &#8658; Override USB function pointers with our buffer address
 
-                    <p>Exploit is available in my GitHub account</p>
+                        Exploit is available in my GitHub account
 
-                    <p><a href="https://www.github.com/Oranav">https://www.github.com/Oranav</a></p>
+                        https://github.com/oranav/i9300_sboot_exploit
+                    </textarea>
                 </section>
 
-                <section data-background-video="resources/VID_20171214_094259.mp4" data-background-size="contain">
+                <section>
+                    <h3>Repeat for x:</h3>
+                    <ol>
+                        <li>Power off eMMC</li>
+                        <li class="fragment">Power on eMMC</li>
+                        <li class="fragment">Quickly send CMDx with arg <code>0x69FF87A9</code></li>
+                        <li class="fragment">Wait 200ms</li>
+                        <li class="fragment">Try to send any command supported by boot ROM</li>
+                    </ol>
+
+                    <div class="align">
+                        <p class="fragment"><span style="color:#ff2c2d">&#x2717;</span> CMD0(0x69FF87A9) fails</p>
+                        <p class="fragment"><span style="color:#17ff2e">&#x2713;</span> CMD1(0x69FF87A9) works!</p>
+                    </div>
+                </section>
+
+                <section data-background-video="resources/out.mp4" data-background-size="contain" data-background-video-loop="loop" data-background-video-muted="true">
+                </section>
+
+                <section data-background="resources/s3-black.png" data-background-size="contain">
+                    <h2>But what if it's <u>really</u> dead?</h2>
+                </section>
+
+                <section data-markdown>
+                    <textarea data-template>
+                        ## Exynos boot process
+
+                        1. Exynos boot ROM
+                        2. 1bl (signed)
+                        3. sboot (signed)
+                        4. Kernel
+                    </textarea>
+                </section>
+
+                <section data-markdown>
+                    <textarea data-template>
+                        ## 1bl loading order
+
+                        1. eMMC
+                        2. External SD card
+                        3. UART (requires UART cable)
+                    </textarea>
+                </section>
+
+                <section>
+                    <h2>Booting from SD card</h2>
+                    <div class="align">
+                        <p>sboot boots into <i>"SDCARD mode"</i> - no USB :-(</p>
+                        <p>ODROID-X: same CPU, but 1bl happily loads anything!</p>
+                        <p>Patch sboot and exploit it over USB :-)</p>
+                    </div>
+
+                    <p><small>
+                        <a href="https://forum.xda-developers.com/galaxy-s3/general/totally-revolutionary-sdcard-bootloader-t2061437">Totally Revolutionary SDCard Bootloader For Galaxy S III</a><br />
+                        <a href="https://forum.xda-developers.com/showthread.php?t=2023069">UnBrickable SD necromancy- Totally restore your device.</a><br />
+                        <a href="https://github.com/dmarszk/exynos4_uboot">https://github.com/dmarszk/exynos4_uboot</a><br />
+                        <i>AdamOutler, Rebellos, Ralekdev</i>
+                    </small></p>
+                </section>
+
+                <section data-markdown>
+                    <textarea data-template>
+                        ## Modified boot process
+
+                        1. Exynos boot ROM
+                        2. ODROID-X 1bl from SD card (signed)
+                        3. Patched sboot from SD card
+                        4. Shellcode via USB
+                        
+                        **No hardware mod required!**
+                    </textarea>
+                </section>
+
+                <section data-background="resources/repair.jpg">
+                    <h1 style="color:#fd4956"><span style="text-transform:none;">e</span>MMC repairing</h1>
+                </section>
+
+                <section>
+                    <p>There are two revisions of VTU00M:</p>
+                    <ul>
+                        <li>Firmware 0xf1 - buggy</li>
+                        <li>Firmware 0xf7 - bug is fixed</li>
+                    </ul>
+
+                    <p><strong>Goal:</strong> Update chip to 0xf7 and format FTL metadata</p>
+                </section>
+
+                <section data-markdown>
+                    <textarea data-template>
+                        ## f7 dump
+
+                        eMMC firmware dump tool - kernel module
+
+                        Convince anyone to run your code on their device...
+
+                        Got a dump from @artesea at XDA-Developers!
+                    </textarea>
+                </section>
+
+                <section data-markdown>
+                    <textarea data-template>
+                        ## eMMC firmware upgrade
+
+                        Absolutely doable:
+
+                        Use backdoor to write RAM and run your code
+
+                        However, there's another, simpler way... <!-- .element: class="fragment" -->
+                    </textarea>
+                </section>
+
+                <section data-markdown>
+                    <textarea data-template>
+                        ## CMD60 firmware upgrade
+
+                        Another backdoor - CMD60(0xefac60ec)
+
+                        Two firmware upgrade modes:
+                        1. CMD60(0xcbad1160)
+                        2. CMD60(0x1bfc3360)
+
+                        Former supports FTL metadata format!
+                    </textarea>
+                </section>
+
+                <section data-markdown>
+                    <textarea data-template>
+                        ## Firmware internals
+
+                        * Two copies of the firmware
+                        * Flash descriptor (where and how firmware is saved?)
+                        * Restore descriptor from a working device
+                        * Details &amp; working code provided:
+
+                            https://github.com/oranav/i9300_sboot_exploit
+                    </textarea>
+                </section>
+
+                <section data-markdown>
+                    <textarea data-template>
+                        ## Wrap-up
+
+                        1. Get a dead Galaxy S3 (GT-I9300)
+                        2. Boot to sboot (directly or SD card)
+                        3. Exploit sboot
+                        4. Reboot eMMC into boot ROM recovery mode
+                        5. Use CMD60 to format FTL and flash 0xf7
+                        6. Reboot eMMC
+                        7. Write sboot to eMMC's boot partition
+                        8. ???
+                        9. PROFIT
+                    </textarea>
+                </section>
+
+                <section data-markdown>
+                    <textarea data-template>
+                        ## Further research
+
+                        * RAM backdoor is available in new eMMC devices!
+                            * Although firmware is somewhat different
+                        * Restore data from a dead eMMC
+                        * Deep forensics (read raw flash, parse FTL metadata)
+                        * eMMC rootkit proof of concept
+                        * Ultimate goal: open-source alternative firmware?
+                    </textarea>
+                </section>
+
+                <section data-markdown>
+                    <textarea data-template>
+                        ## Shout outs
+
+                        * Rebellos, AdamOutler, Ralekdev - Exynos U-Boot and 1bl work
+
+                        * Entropy512 - Involved in eMMC research in 2013
+
+                        * bunnie &amp; xobs - wonderful 30C3 talk about hacking chinese SD cards
+                            * And for motivating me to complete this research!
+                    </textarea>
+                </section>
+
+                <section data-markdown data-background-color="#003626">
+                    <textarea data-template>
+                        ## Questions &amp; Code 
+
+                        * Python Samsung eMMC sandbox
+
+                            https://github.com/oranav/movipwn
+                        * sboot exploit &amp; shellcode
+
+                            https://github.com/oranav/i9300_sboot_exploit
+                        * Slides
+
+                            https://github.com/oranav/emmc-talk-2017
+                    </textarea>
                 </section>
 			</div>
 		</div>
