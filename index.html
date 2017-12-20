@@ -28,15 +28,19 @@
     text-align: left;
 }
 
-section img.plain {
+.reveal .slides section img.plain {
     background: none !important;
+}
+
+.reveal .slides .muted {
+    color: #3d4646;
 }
         </style>
 	</head>
 	<body>
 		<div class="reveal">
 			<div class="slides">
-                <section x-data-background-image="resources/chip_sketch.png">
+                <section>
                     <h1><span style='text-transform:none;'>e</span>MMC Hacking</h1>
                     <h3 style='text-transform:none;'>(or: how I fixed long dead Galaxy S3 phones)</h3>
                     Oran Avraham<br />
@@ -46,8 +50,10 @@ section img.plain {
                 <section data-markdown>
                     <textarea data-template>
                         ## Who am I?
+                        - Oran Avraham, 25
                         - Security researcher based in Israel
                         - Previously worked on openiBoot
+                        - Found vulns in iPhone 3G(S) &amp; 4 baseband
                         - CTF player with Pasten
                         
                         https://oranav.me
@@ -56,13 +62,37 @@ section img.plain {
                     </textarea>
                 </section>
 
-                <section data-background="resources/deadparrot.jpg">
+                <section data-markdown>
+                    <textarea data-template>
+                        ## Outline
+
+                        1. Introduction
+                        2. Samsung's eMMC patch
+                        3. Obtain &amp; analyze the firmware
+                        4. The bug
+                        5. Resurrect dead phones
+                    </textarea>
+                </section>
+
+                <section data-markdown>
+                    <textarea data-template>
+                        ## Outline
+
+                        1. Introduction
+                        2. Samsung's eMMC patch  <!-- .element class="muted" -->
+                        3. Obtain &amp; analyze the firmware  <!-- .element class="muted" -->
+                        4. The bug  <!-- .element class="muted" -->
+                        5. Resurrect dead phones  <!-- .element class="muted" -->
+                    </textarea>
+                </section>
+
+                <section data-background="resources/deadparrot.jpg" data-state="fullscreen">
                     <h2 style="color:#fd4956">"Sudden Death Syndrome"</h2>
                 </section>
 
                 <section data-markdown>
                     <textarea data-template>
-                        Back in late 2012, Samsung Galaxy S3 phones started dying with no apparent reason
+                        Back in late 2012, Samsung Galaxy S3 (GT-I9300) phones started dying with no apparent reason
 
                         If you're lucky, phone boots into bootloader <!-- .element: class="fragment" -->
 
@@ -113,6 +143,23 @@ section img.plain {
                 <section>
                     <h2>You also get "download mode".</h2>
                     <img class="plain stretch" src="resources/s3-download.png" />
+                </section>
+
+                <section>
+                    <h2>How S3 works</h2>
+                    <img class="plain" src="resources/schematic_1.svg" />
+                </section>
+
+                <section data-markdown>
+                    <textarea data-template>
+                        ## Outline
+
+                        1. Introduction  <!-- .element class="muted" -->
+                        2. Samsung's eMMC patch
+                        3. Obtain &amp; analyze the firmware  <!-- .element class="muted" -->
+                        4. The bug  <!-- .element class="muted" -->
+                        5. Resurrect dead phones  <!-- .element class="muted" -->
+                    </textarea>
                 </section>
 
                 <section>
@@ -206,24 +253,30 @@ int mmc_start_movi_smart(struct mmc_card *card)
                     <pre style="width:100%"><code class="cpp" data-trim data-noescape>
 int mmc_start_movi_operation(struct mmc_card *card)
 {
-    mmc_movi_cmd(card-&gt;host, 0xEFAC62EC);  <span class="fragment" data-fragment-index="1">// Enter secret backdoor mode</span>
+    mmc_movi_cmd(card-&gt;host, 0xEFAC62EC);  <span class="fragment" data-fragment-index="2">// Enter secret backdoor mode</span>
     mmc_movi_cmd(card-&gt;host, 0x10210000);
-    <span class="fragment highlight-red" data-fragment-index="0">mmc_movi_erase_cmd</span>(card-&gt;host, 0x00040300, 0x4A03B510);  <span class="fragment" data-fragment-index="2">// 10 B5...</span>
+    <span class="fragment highlight-red" data-fragment-index="0">mmc_movi_erase_cmd</span>(card-&gt;host, 0x00040300, 0x4A03B510);  <span class="fragment" data-fragment-index="3">// 10 B5...</span>
     <span class="fragment highlight-red" data-fragment-index="0">mmc_movi_erase_cmd</span>(card-&gt;host, 0x00040304, 0x28004790);
     <span class="fragment highlight-red" data-fragment-index="0">mmc_movi_erase_cmd</span>(card-&gt;host, 0x00040308, 0xE7FED100);
     <span class="fragment highlight-red" data-fragment-index="0">mmc_movi_erase_cmd</span>(card-&gt;host, 0x0004030C, 0x0000BD10);
     <span class="fragment highlight-red" data-fragment-index="0">mmc_movi_erase_cmd</span>(card-&gt;host, 0x00040310, 0x00059D73);
     <span class="fragment highlight-red" data-fragment-index="0">mmc_movi_erase_cmd</span>(card-&gt;host, 0x0005C7EA, 0xFD89F7E3);
-    mmc_movi_cmd(card-&gt;host, 0xEFAC62EC);  <span class="fragment" data-fragment-index="1">// Leave secret backdoor mode</span>
+    mmc_movi_cmd(card-&gt;host, 0xEFAC62EC);  <span class="fragment" data-fragment-index="2">// Leave secret backdoor mode</span>
     mmc_movi_cmd(card-&gt;host, 0x00DECCEE);
 } 
                     </code></pre>
+                    <span class="fragment" data-fragment-index="1"><code>mmc_movi_cmd</code> is basically eMMC CMD62</span>
                 </section>
 
                 <section>
                     <h2>This is an eMMC...</h2>
                     <img src="resources/emmc-finger.jpg" />
                     <p>(next to a Thumb™)</p>
+                </section>
+
+                <section>
+                    <h2>How S3 works</h2>
+                    <img class="plain" src="resources/schematic_2.svg" />
                 </section>
 
                 <!--<section data-background="resources/morpheus.jpg">
@@ -240,7 +293,6 @@ int mmc_start_movi_operation(struct mmc_card *card)
                 </section>
 
                 <section>
-                    <img src="resources/patch-disasm.png" height="400px" /><br />
                     <pre><code class="cpp" data-trim data-noescape>
                     void sub_40300()
                     {
@@ -248,6 +300,7 @@ int mmc_start_movi_operation(struct mmc_card *card)
                             while (1);
                     }
                     </code></pre>
+                    <img src="resources/patch-disasm.png" height="400px" /><br />
                 </section>
 
                 <section>
@@ -274,6 +327,28 @@ int mmc_start_movi_operation(struct mmc_card *card)
                         Angry S3 users reporting this problem...<br />
                         Galaxy S3 keeps freezing every 5 mins (50+ freezes a day)<br />
                     </blockquote>
+                </section>
+
+                <section data-markdown>
+                    <textarea data-template>
+                        ## Outline
+
+                        1. Introduction  <!-- .element class="muted" -->
+                        2. Samsung's eMMC patch  <!-- .element class="muted" -->
+                        3. Obtain &amp; analyze the firmware
+                        4. The bug  <!-- .element class="muted" -->
+                        5. Resurrect dead phones  <!-- .element class="muted" -->
+                    </textarea>
+                </section>
+
+                <section data-markdown>
+                    <textarea data-template>
+                        ## How to get a firmware?
+
+                        1. Write code and try to probe your way out
+                        2. Fuzz with different commands
+                        3. Look for clues
+                    </textarea>
                 </section>
 
                 <section>
@@ -332,6 +407,9 @@ for (unsigned addr = 0; addr &lt;= 0x80000; addr += 4) {
                     Success! Looks like a firmware!
                 </section>
 
+                <section data-background="resources/firmware.png" data-background-size="contain" data-background-color="#2d2d2d">
+                </section>
+
                 <section>
                     <h2>Reversing the firmware?</h2>
                     The firmware contained <span class="fragment strike" data-fragment-index="0">strings!</span>
@@ -349,10 +427,22 @@ for (unsigned addr = 0; addr &lt;= 0x80000; addr += 4) {
                     <p class="fragment">A <b>lot</b> of MMIO registers of unknown hardware</p>
                 </section>
 
-                <section>
-                    <h2>Memory layout</h2>
+                <section data-background="resources/firmware_cmdhandlers.png" data-background-size="contain" data-background-color="#2d2d2d">
+                </section>
 
-                    <img class="plain stretch" src="resources/memory-layout.png" />
+                <section data-background="resources/firmware_cmd62.png" data-background-size="contain" data-background-color="#2d2d2d">
+                </section>
+
+                <section data-markdown>
+                    <textarea data-template>
+                        ## Outline
+
+                        1. Introduction  <!-- .element class="muted" -->
+                        2. Samsung's eMMC patch  <!-- .element class="muted" -->
+                        3. Obtain &amp; analyze the firmware  <!-- .element class="muted" -->
+                        4. The bug
+                        5. Resurrect dead phones  <!-- .element class="muted" -->
+                    </textarea>
                 </section>
 
                 <section data-background="resources/chip_sketch.png">
@@ -394,7 +484,7 @@ for (unsigned addr = 0; addr &lt;= 0x80000; addr += 4) {
                 </section>
 
                 <section>
-                    <h2> VTU00M 0<span style="text-transform:none">x</span>F1 bug</h2>
+                    <h2> VTU00M 0<span style="text-transform:none">x</span>F1 bug 🐞</h2>
 
                     <div class="align">
                         <p>FTL metadata gets corrupted once</p>
@@ -413,17 +503,66 @@ for (unsigned addr = 0; addr &lt;= 0x80000; addr += 4) {
                     </div>
                 </section>
 
+                <section data-markdown>
+                    <textarea data-template>
+                        ## Recap
+
+                        * Got eMMC FW by analyzing Samsung's patch
+
+                        * eMMC FW has a bug causing FTL corruption
+
+                        * Bug only happens once in a while
+
+                        * Once bug has happened, chip won't boot anymore
+
+                        * Samsung's patch: just before the corruption, halt eMMC
+                    </textarea>
+                </section>
+
+                <section data-markdown>
+                    <textarea data-template>
+                        ## Outline
+
+                        1. Introduction  <!-- .element class="muted" -->
+                        2. Samsung's eMMC patch  <!-- .element class="muted" -->
+                        3. Obtain &amp; analyze the firmware  <!-- .element class="muted" -->
+                        4. The bug  <!-- .element class="muted" -->
+                        5. Resurrect dead phones
+
+                        *Sure... what?!* <!-- .element class="fragment" -->
+                    </textarea>
+                </section>
+
+                <section data-markdown>
+                    <textarea data-template>
+                        eMMC gets into a loop at boot.
+
+                        But what happens *before*?
+                    </textarea>
+                </section>
+
+                <section>
+                    <h2>eMMC Memory layout</h2>
+
+                    <img class="plain stretch" src="resources/memory-layout.png" />
+                </section>
+
                 <section>
                     <h2>Boot ROM</h2>
-                    <p>Initializes hardware and loads firmware <b>from flash</b></p>
+                    <p>Initializes hardware and loads firmware *<b>from flash</b>*</p>
                     <p>Has its own machinery for eMMC commands<br/>(when firmware loading fails)</p>
                     <p>Basically a stripped down firmware (no FTL)</p>
                 </section>
 
                 <section>
-                    <p>If we could ever talk to the boot ROM, we might be able to recover the device!</p>
-                    <p class="fragment">However, firmware loading actually <i>succeeds</i></p>
-                    <p class="fragment">Firmware executes, enters a loop &#8658; no chance</p>
+                    <h2>How S3 works</h2>
+                    <img class="plain" src="resources/schematic_3.svg" />
+                </section>
+
+                <section>
+                    <p>If only we could talk to the boot ROM...</p>
+                    <p>However, firmware loading actually <i>succeeds</i></p>
+                    <p>Firmware executes, enters a loop &#8658; no chance</p>
                     <p class="fragment"><i>Right?</i></p>
                 </section>
 
@@ -438,6 +577,26 @@ for (unsigned addr = 0; addr &lt;= 0x80000; addr += 4) {
                     <img class="plain stretch" src="resources/emmc_boot.svg" />
                 </section>
 
+                <section data-markdown>
+                    <textarea data-template>
+                        My guess: some eMMC command with argument 0x69FF87A9
+                    </textarea>
+                </section>
+
+                <section data-markdown>
+                    <textarea data-template>
+                        ## Recap
+
+                        * Dead eMMCs get stuck on boot
+
+                        * However, right before, there's a time window
+
+                        * During this window one may interrupt boot
+
+                        * Boot interrupted - eMMC boot ROM recovery mode
+                    </textarea>
+                </section>
+
                 <section>
                     <h3>Wait, what?</h3>
 
@@ -445,10 +604,30 @@ for (unsigned addr = 0; addr &lt;= 0x80000; addr += 4) {
                     <p>Sure, <i>I could've used a hardware mod</i>, however...</p>
                 </section>
 
+                <section data-markdown>
+                    <textarea data-template>
+                        ## Outline
+
+                        1. Introduction  <!-- .element class="muted" -->
+                        2. Samsung's eMMC patch  <!-- .element class="muted" -->
+                        3. Obtain &amp; analyze the firmware  <!-- .element class="muted" -->
+                        4. The bug  <!-- .element class="muted" -->
+                        5. Talk to the eMMC through magic?
+                        6. eMMC boot ROM access  <!-- .element class="muted" -->
+                        7. eMMC repair  <!-- .element class="muted" -->
+                        8. Conclusion  <!-- .element class="muted" -->
+                    </textarea>
+                </section>
+
                 <section>
                     <h2>Recap: If you're lucky, you get this.</h2>
                     <img class="plain stretch" src="resources/s3-booting.png" />
                     <p>But how?</p>
+                </section>
+
+                <section>
+                    <h2>How S3 works</h2>
+                    <img class="plain" src="resources/schematic_4.svg" />
                 </section>
 
                 <section>
@@ -459,9 +638,27 @@ for (unsigned addr = 0; addr &lt;= 0x80000; addr += 4) {
                 </section>
 
                 <section>
+                    <h2>How S3 breaks</h2>
+                    <img class="plain" src="resources/schematic_5.svg" />
+                </section>
+
+                <section data-markdown>
+                    <textarea data-template>
+                        ## Broken boot process
+
+                        1. Exynos reads boot partition from eMMC
+                        2. Exynos executes sboot
+                        3. sboot tries to access user partition
+                        4. eMMC's CPU raises an exception
+                        5. sboot gets no answer - timeout
+                    </textarea>
+                </section>
+
+                <section>
                     <p>sboot has a DFU mode called "download mode"</p>
                     <p>Protocol over USB; Loke &#x27f7; Odin</p>
                     <p>No way of sending low-level eMMC commands</p>
+                    <img src="resources/odin.png" width="500px" />
                 </section>
 
                 <section data-background="resources/s3-download.png">
@@ -540,27 +737,21 @@ for (unsigned addr = 0; addr &lt;= 0x80000; addr += 4) {
                     </textarea>
                 </section>
 
-                <section>
-                    <h3>Repeat for x:</h3>
-                    <ol>
-                        <li>Power off eMMC</li>
-                        <li class="fragment">Power on eMMC</li>
-                        <li class="fragment">Quickly send CMDx with arg <code>0x69FF87A9</code></li>
-                        <li class="fragment">Wait 200ms</li>
-                        <li class="fragment">Try to send any command supported by boot ROM</li>
-                    </ol>
-
-                    <div class="align">
-                        <p class="fragment"><span style="color:#ff2c2d">&#x2717;</span> CMD0(0x69FF87A9) fails</p>
-                        <p class="fragment"><span style="color:#17ff2e">&#x2713;</span> CMD1(0x69FF87A9) works!</p>
-                    </div>
-                </section>
-
                 <section data-background-video="resources/out.mp4" data-background-size="contain" data-background-video-loop="loop" data-background-video-muted="true">
                 </section>
 
                 <section data-background="resources/s3-black.png" data-background-size="contain">
                     <h2>But what if it's <u>really</u> dead?</h2>
+                </section>
+
+                <section>
+                    <h2>How S3 utterly breaks</h2>
+                    <img class="plain" src="resources/schematic_6.svg" />
+                </section>
+
+                <section>
+                    <h2>How S3 almost breaks</h2>
+                    <img class="plain" src="resources/schematic_7.svg" />
                 </section>
 
                 <section data-markdown>
@@ -576,7 +767,7 @@ for (unsigned addr = 0; addr &lt;= 0x80000; addr += 4) {
 
                 <section data-markdown>
                     <textarea data-template>
-                        ## 1bl loading order
+                        ## Loading order
 
                         1. eMMC
                         2. External SD card
@@ -610,6 +801,72 @@ for (unsigned addr = 0; addr &lt;= 0x80000; addr += 4) {
                         4. Shellcode via USB
                         
                         **No hardware mod required!**
+                    </textarea>
+                </section>
+
+                <section data-markdown>
+                    <textarea data-template>
+                        ## Recap
+
+                        * Boot partition still intact &#8658; phone loads sboot
+
+                        * Boot partition corrupt &#8658; phone uses SD card
+
+                        * Either way load sboot
+
+                        * Exploit a vulnerability to gain code execution
+                    </textarea>
+                </section>
+
+                <section data-markdown>
+                    <textarea data-template>
+                        Got code execution on Exynos either way
+
+                        Let's try and talk to eMMC's boot ROM
+
+                        Remember? 0x69FF87A9...
+                    </textarea>
+                </section>
+
+                <section data-markdown>
+                    <textarea data-template>
+                        ## Outline
+
+                        1. Introduction  <!-- .element class="muted" -->
+                        2. Samsung's eMMC patch  <!-- .element class="muted" -->
+                        3. Obtain &amp; analyze the firmware  <!-- .element class="muted" -->
+                        4. The bug  <!-- .element class="muted" -->
+                        5. sboot Exploitation  <!-- .element class="muted" -->
+                        6. eMMC boot ROM access
+                        7. eMMC repair  <!-- .element class="muted" -->
+                        8. Conclusion  <!-- .element class="muted" -->
+                    </textarea>
+                </section>
+
+                <section>
+                    <h3>Repeat for x:</h3>
+                    <ol>
+                        <li>Power off eMMC</li>
+                        <li class="fragment">Power on eMMC</li>
+                        <li class="fragment">Quickly send CMDx with arg <code>0x69FF87A9</code></li>
+                        <li class="fragment">Wait 200ms</li>
+                        <li class="fragment">Send any command supported by boot ROM</li>
+                        <li class="fragment">Check if you get a response</li>
+                    </ol>
+
+                    <div class="align">
+                        <p class="fragment"><span style="color:#ff2c2d">&#x2717;</span> CMD0(0x69FF87A9) fails</p>
+                        <p class="fragment"><span style="color:#17ff2e">&#x2713;</span> CMD1(0x69FF87A9) works!</p>
+                    </div>
+                </section>
+
+                <section data-markdown>
+                    <textarea data-template>
+                        eMMC responds for the first time! ✌
+
+                        eMMC boot ROM even has CMD62
+
+                        Let's fix it once and for all
                     </textarea>
                 </section>
 
@@ -667,11 +924,10 @@ for (unsigned addr = 0; addr &lt;= 0x80000; addr += 4) {
 
                 <section data-markdown>
                     <textarea data-template>
-                        ## Firmware internals
+                        ## Implementation
 
-                        * Two copies of the firmware
-                        * Flash descriptor (where and how firmware is saved?)
-                        * Restore descriptor from a working device
+                        * As I said, details are boring...
+
                         * Details &amp; working code provided:
 
                             https://github.com/oranav/i9300_sboot_exploit
@@ -689,8 +945,29 @@ for (unsigned addr = 0; addr &lt;= 0x80000; addr += 4) {
                         5. Use CMD60 to format FTL and flash 0xf7
                         6. Reboot eMMC
                         7. Write sboot to eMMC's boot partition
-                        8. ???
-                        9. PROFIT
+                        8. ???  <!-- .element class="fragment" data-fragment-index="0" -->
+                        9. PROFIT  <!-- .element class="fragment" data-fragment-index="0" -->
+                    </textarea>
+                </section>
+
+                <section data-markdown data-background-color="#360b00">
+                    <textarea data-template>
+                        # Demo time
+                    </textarea>
+                </section>
+
+                <section data-markdown>
+                    <textarea data-template>
+                        ## Outline
+
+                        1. Introduction  <!-- .element class="muted" -->
+                        2. Samsung's eMMC patch  <!-- .element class="muted" -->
+                        3. Obtain &amp; analyze the firmware  <!-- .element class="muted" -->
+                        4. The bug  <!-- .element class="muted" -->
+                        5. sboot Exploitation  <!-- .element class="muted" -->
+                        6. eMMC boot ROM access  <!-- .element class="muted" -->
+                        7. eMMC repair  <!-- .element class="muted" -->
+                        8. Conclusion
                     </textarea>
                 </section>
 
@@ -698,12 +975,11 @@ for (unsigned addr = 0; addr &lt;= 0x80000; addr += 4) {
                     <textarea data-template>
                         ## Further research
 
-                        * RAM backdoor is available in new eMMC devices!
-                            * Although firmware is somewhat different
+                        * New eMMC / UFS devices
                         * Restore data from a dead eMMC
                         * Deep forensics (read raw flash, parse FTL metadata)
-                        * eMMC rootkit proof of concept
-                        * Ultimate goal: open-source alternative firmware?
+                        * eMMC rootkit
+                        * Open-source alternative firmware
                     </textarea>
                 </section>
 
