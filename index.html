@@ -705,24 +705,68 @@ for (unsigned addr = 0; addr &lt;= 0x80000; addr += 4) {
                 </section>
 
                 <section>
-                    Illustration
+                    <div style="position:fixed;top:10%" class="fragment">malloc(0x50)</div>
+                    <div style="position:relative;display:inline-block">
+                        <img class="plain" src="resources/sboot_heap.svg" />
+                        <svg height="100" width="100" class="fragment current-visible" style="position:absolute;top:2%;left:34%;">
+                            <circle cx="50" cy="50" r="20" stroke="black" stroke-width="3" fill="#1b91ff" />
+                        </svg>
+                        <svg height="100" width="100" class="fragment current-visible" style="position:absolute;top:22%;left:68%;">
+                            <circle cx="50" cy="50" r="20" stroke="black" stroke-width="3" fill="#1b91ff" />
+                        </svg>
+                        <svg height="100" width="100" class="fragment current-visible" style="position:absolute;top:51%;left:68%;">
+                            <circle cx="50" cy="50" r="20" stroke="black" stroke-width="3" fill="#1b91ff" />
+                        </svg>
+                        <svg height="100" width="100" class="fragment current-visible" style="position:absolute;top:73%;left:34%;">
+                            <circle cx="50" cy="50" r="20" stroke="black" stroke-width="3" fill="#1b91ff" />
+                        </svg>
+                        <svg height="100" width="100" class="fragment current-visible" style="position:absolute;top:51%;left:1%;">
+                            <circle cx="50" cy="50" r="20" stroke="black" stroke-width="3" fill="#1b91ff" />
+                        </svg>
+                        <svg height="100" width="100" class="fragment current-visible" style="position:absolute;top:22%;left:1%;">
+                            <circle cx="50" cy="50" r="20" stroke="black" stroke-width="3" fill="#1b91ff" />
+                        </svg>
+                        <svg height="100" width="100" class="fragment current-visible" style="position:absolute;top:2%;left:34%;">
+                            <circle cx="50" cy="50" r="20" stroke="black" stroke-width="3" fill="#1b91ff" />
+                        </svg>
+                        <svg width="200" height="100" class="fragment" style="position:absolute;top:29.5%;left:67%">
+                            <rect width="200" height="100" style="fill:transparent;stroke-width:20;stroke:#1b91ff" />
+                        </svg>
+                    </div>
+                </section>
+
+                <section>
+                    <img class="plain" src="resources/sboot_heap_2.svg" />
+                </section>
+
+                <section>
+                    <img class="plain" src="resources/sboot_heap_3.svg" style="padding-right:109px" />
                 </section>
 
                 <section>
                     <h3>Exploitation strategy</h3>
 
-                    <p>Goal: achieve write-what-where</p>
+                    <p class="align"><u>Goal</u>: achieve write-what-where<br />
+                        <u>Means</u>: exploit chunk splitting</p>
 
                     <ol class="align">
-                        <li>Figure out <code>buffer</code> address</li>
-                        <li>Fake a chunk header with arbitrary large size</li>
-                        <li>Upon malloc(sz): <br/><code><span style="color:#ff2c2d">addr</span> = chunk + <span style="color:#1b91ff">chunk-&gt;size</span> - sz</code></li>
+                        <li>Fake a chunk header with *<strong>large</strong>* size</li>
+                        <li>Figure out its address</li>
+                        <li>Make sure this chunk is selected upon <code>malloc(sz)</code></li>
+                        <li class="fragment">Returns <code><span style="color:#ff2c2d">addr</span> = chunk + <span style="color:#1b91ff">chunk-&gt;size</span> - sz</code></li>
                         <li class="fragment">Set <code><span style="color:#1b91ff">chunk-&gt;size</span> = <span style="color:#ff2c2d">addr</span> - chunk + sz</code></li>
                     </ol>
                 </section>
 
                 <section>
-                    Illustration?
+                    <h2>Exploitation example</h2>
+                    <ul>
+                        <li>Fake chunk is at address <code>0x1337000</code></li>
+                        <li>We want to write <code>0xDEADBEEF</code></li>
+                        <li><code>malloc(0x100)</code> is called</li>
+                        <li class="fragment">Set <code>size = 0xDEADBEEF-0x13370000+0x100</code></li>
+                        <li class="fragment"><code>malloc(0x100)</code> returns<br /><code>0x13370000 + size - 0x100<br /><span class="fragment">= 0xDEADBEEF</span></code></li>
+                    </ul>
                 </section>
 
                 <section data-markdown>
