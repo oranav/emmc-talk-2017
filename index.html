@@ -165,13 +165,13 @@
                 <section>
                     <p>Then, samsung dropped a patch.</p>
                     <pre><code class="cpp" data-trim data-noescape>
-    if (!strncmp(host->card->cid.prod_name, "VTU00M", 6) &&
-        (host->card->cid.prod_rev == 0xf1) &&
-        (mmc_start_movi_smart(host->card) == 0x2))
-        host->card->movi_ops = 0x2;
+    if (!strncmp(host-&gt;card-&gt;cid.prod_name, "VTU00M", 6) &amp;&amp;
+        (host-&gt;card-&gt;cid.prod_rev == 0xf1) &amp;&amp;
+        (mmc_start_movi_smart(host-&gt;card) == 0x2))
+        host-&gt;card-&gt;movi_ops = 0x2;
 
-    if (host->card->movi_ops == 0x2)
-        mmc_start_movi_operation(host->card);
+    if (host-&gt;card-&gt;movi_ops == 0x2)
+        mmc_start_movi_operation(host-&gt;card);
                     </code></pre>
 
                     <p><small>
