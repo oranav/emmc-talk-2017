@@ -59,6 +59,10 @@
                         https://oranav.me
 
                         Twitter: [@oranav](https://twitter.com/oranav)
+
+                        <aside class="notes">
+                            Medigate - no connection to my employer whatsoever
+                        </aside>
                     </textarea>
                 </section>
 
@@ -148,6 +152,10 @@
                 <section>
                     <h2>How S3 works</h2>
                     <img class="plain" src="resources/schematic_1.svg" />
+
+                    <aside class="notes">
+                        eMMC - storage device
+                    </aside>
                 </section>
 
                 <section data-markdown>
@@ -178,6 +186,10 @@
                         <a href="https://github.com/CyanogenMod/android_kernel_samsung_smdk4412/commit/da8461692362317a8ffce4d4646953985fcf4e1d">mmc: Soft-patch MoviNAND VTU00M (16GB) eMMC failure</a><br />
                         <i>Linux/drivers/mmc/core/mmc.c</i>
                     </small></p>
+
+                    <aside class="notes">
+                        Don't talk about the patch yet! Mention only the MMC subsystem
+                    </aside>
                 </section>
 
                 <section data-background="resources/eMMC.jpg">
@@ -192,6 +204,10 @@
                         <small><i>HardKernel ODROID eMMC reader board</i></small>
                     </p>
                     <p>Essentially a NAND flash chip with convenient bus</p>
+
+                    <aside class="notes">
+                        eMMC contains the phone's software (Linux, Android) and the user's data (apps, photos, files etc.)
+                    </aside>
                 </section>
 
                 <section data-timing="60">
@@ -226,6 +242,11 @@
                         <a href="https://github.com/CyanogenMod/android_kernel_samsung_smdk4412/commit/da8461692362317a8ffce4d4646953985fcf4e1d">mmc: Soft-patch MoviNAND VTU00M (16GB) eMMC failure</a><br />
                         <i>Linux/drivers/mmc/core/mmc.c</i>
                     </small></p>
+
+                    <aside class="notes">
+                        VTU00M - model of chip<br/>
+                        0xf1 - firmware revision<br/>
+                    </aside>
                 </section>
 
                 <!--<section>
@@ -266,6 +287,16 @@ int mmc_start_movi_operation(struct mmc_card *card)
 } 
                     </code></pre>
                     <span class="fragment" data-fragment-index="1"><code>mmc_movi_cmd</code> is basically eMMC CMD62</span>
+
+                    <aside class="notes" data-markdown>
+                        1. Why is there an erase?
+                        2. movi_cmd is 62
+                        3. Enter/leave secret backdoor
+                        4. Consecutive numbers (first argument)
+                        5. 10 B5
+
+                        Thumb is an instruction set supported by ARM CPUs
+                    </aside>
                 </section>
 
                 <section>
@@ -301,6 +332,10 @@ int mmc_start_movi_operation(struct mmc_card *card)
                     }
                     </code></pre>
                     <img src="resources/patch-disasm.png" height="400px" /><br />
+
+                    <aside class="notes">
+                        MOVE TO NEXT SLIDE BEFORE SAYING IT DOESN'T FIX ANYTHING
+                    </aside>
                 </section>
 
                 <!--<section>
@@ -316,6 +351,10 @@ int mmc_start_movi_operation(struct mmc_card *card)
                         <h2>DEAR S3 CUSTOMERS</h2>
                         <h2 style="position:absolute;bottom:0;text-align:center;width:100%">WE "FIXED" IT</h2>
                     </div>
+
+                    <aside class="notes">
+                        Enter...
+                    </aside>
                 </section>
 
                 <section data-timing="30">
@@ -367,6 +406,11 @@ int mmc_start_movi_operation(struct mmc_card *card)
                     </small></p>
 
                     <p class="fragment" data-fragment-index="1">But there was something else afterwards...</p>
+
+                    <aside class="notes" data-markdown>
+                        - Mention 0x10210000
+                        - Mention 4DD9C
+                    </aside>
                 </section>
 
                 <section data-timing="60">
@@ -383,6 +427,12 @@ int mmc_start_movi_operation(struct mmc_card *card)
                     </code></pre>
 
                     <p class="fragment">Maybe this is Samsung's way of <i>reading the RAM</i>?</p>
+
+                    <aside class="notes" data-markdown>
+                        1. 10210002 instead of 10210000
+                        2. Same address, but now with read command
+                        3. Maybe method for reading the RAM?
+                    </aside>
                 </section>
 
                 <!--<section data-background="resources/allthememe.jpg">
@@ -401,9 +451,17 @@ for (unsigned addr = 0; addr &lt;= 0x80000; addr += 4) {
     write(outfd, buffer, 4);
 }
                     </code></pre>
+
+                    <aside class="notes">
+                        Just loop over all possible addresses. This is what I got:
+                    </aside>
                 </section>
 
                 <section data-background="resources/firmware.png" data-background-size="contain" data-background-color="#2d2d2d" data-timing="30">
+                    <aside class="notes" data-markdown>
+                        - Does look like a firmware!
+                        - Names are my own
+                    </aside>
                 </section>
 
                 <section data-timing="20">
@@ -439,6 +497,10 @@ for (unsigned addr = 0; addr &lt;= 0x80000; addr += 4) {
                         4. The bug
                         5. Resurrect dead phones  <!-- .element class="muted" -->
                     </textarea>
+
+                    <aside class="notes">
+                        Before we talk about the bug, we must talk about...
+                    </aside>
                 </section>
 
                 <section data-background="resources/chip_sketch.png">
@@ -464,6 +526,12 @@ for (unsigned addr = 0; addr &lt;= 0x80000; addr += 4) {
                     </ul>
                     
                     <p class="fragment">Erase-blocks have a limited <i>program/erase</i> cycles</p>
+
+                    <aside class="notes" data-markdown>
+                        - Write applies a mask
+                        - Erase block - a megabyte or so
+                        - Maybe thousand up to hundred thousand erase cycles
+                    </aside>
                 </section>
 
                 <section data-timing="60">
@@ -477,6 +545,10 @@ for (unsigned addr = 0; addr &lt;= 0x80000; addr += 4) {
                     </ul>
 
                     <img style="height:280px" src="resources/ftl.png" />
+
+                    <aside class="notes">
+                        Flash Translation Layer is also called FTL
+                    </aside>
                 </section>
 
                 <section data-timing="45">
@@ -548,6 +620,10 @@ for (unsigned addr = 0; addr &lt;= 0x80000; addr += 4) {
                     <p>Initializes hardware and loads firmware *<b>from flash</b>*</p>
                     <p>Has its own machinery for eMMC commands<br/>(when firmware loading fails)</p>
                     <p>Basically a stripped down firmware (no FTL)</p>
+
+                    <aside class="notes">
+                        My guess: firmware is too big to reside inside the ARM, so it is saved on flash
+                    </aside>
                 </section>
 
                 <section data-timing="30">
@@ -571,6 +647,11 @@ for (unsigned addr = 0; addr &lt;= 0x80000; addr += 4) {
 
                 <section data-timing="30">
                     <img class="plain stretch" src="resources/emmc_boot.svg" />
+
+                    <aside class="notes" data-markdown>
+                        - Normal flow is left column
+                        - Goal: go to the right column
+                    </aside>
                 </section>
 
                 <section data-markdown>
@@ -598,6 +679,10 @@ for (unsigned addr = 0; addr &lt;= 0x80000; addr += 4) {
 
                     <p>Phone is dead. How do we even talk with the eMMC?</p>
                     <p>Sure, <i>I could've used a hardware mod</i>, however...</p>
+
+                    <aside class="notes">
+                        Hardware mod requires desoldering the eMMC chip which I can't do
+                    </aside>
                 </section>
 
                 <section data-markdown>
@@ -624,6 +709,10 @@ for (unsigned addr = 0; addr &lt;= 0x80000; addr += 4) {
                 <section data-timing="40">
                     <h2>How S3 works</h2>
                     <img class="plain" src="resources/schematic_4.svg" />
+
+                    <aside class="notes">
+                        Two partitions. Boot holds sboot, User holds Linux, Android, apps and so on.
+                    </aside>
                 </section>
 
                 <section data-timing="40">
@@ -655,6 +744,10 @@ for (unsigned addr = 0; addr &lt;= 0x80000; addr += 4) {
                     <p>Protocol over USB; Loke &#x27f7; Odin</p>
                     <p>No way of sending low-level eMMC commands</p>
                     <img src="resources/odin.png" width="500px" />
+
+                    <aside class="notes">
+                        We want sboot to send low-level eMMC commands but the code isn't there, therefore we must... exploit sboot
+                    </aside>
                 </section>
 
                 <section data-background="resources/s3-download.png">
@@ -785,6 +878,10 @@ for (unsigned addr = 0; addr &lt;= 0x80000; addr += 4) {
                 <section>
                     <h2>How S3 utterly breaks</h2>
                     <img class="plain" src="resources/schematic_6.svg" />
+
+                    <aside class="notes">
+                        Something obviously must load sboot... what is it?
+                    </aside>
                 </section>
 
                 <section data-timing="30">
@@ -800,6 +897,11 @@ for (unsigned addr = 0; addr &lt;= 0x80000; addr += 4) {
                         2. 1bl (signed)
                         3. sboot (signed)
                         4. Kernel
+
+                        <aside class="notes">
+                            1bl is prepended to sboot, and should bootstrap it<br />
+                            Where does Exynos boot ROM look for 1bl+sboot?
+                        </aside>
                     </textarea>
                 </section>
 
@@ -809,7 +911,7 @@ for (unsigned addr = 0; addr &lt;= 0x80000; addr += 4) {
 
                         1. eMMC
                         2. External SD card
-                        3. UART (requires UART cable)
+                        3. UART
                     </textarea>
                 </section>
 
@@ -882,7 +984,7 @@ for (unsigned addr = 0; addr &lt;= 0x80000; addr += 4) {
                 </section>
 
                 <section data-timing="60">
-                    <h3>Repeat for x:</h3>
+                    <h3>Repeat for x: (0 ... 63)</h3>
                     <ol>
                         <li>Power off eMMC</li>
                         <li class="fragment">Power on eMMC</li>
@@ -896,6 +998,10 @@ for (unsigned addr = 0; addr &lt;= 0x80000; addr += 4) {
                         <p class="fragment"><span style="color:#ff2c2d">&#x2717;</span> CMD0(0x69FF87A9) fails</p>
                         <p class="fragment"><span style="color:#17ff2e">&#x2713;</span> CMD1(0x69FF87A9) works!</p>
                     </div>
+
+                    <aside class="notes">
+                        Let's find out which command it is. Iterate over all commands (x)
+                    <aside>
                 </section>
 
                 <section data-markdown data-timing="20">
@@ -905,6 +1011,10 @@ for (unsigned addr = 0; addr &lt;= 0x80000; addr += 4) {
                         eMMC boot ROM even has CMD62
 
                         Let's fix it once and for all
+
+                        <aside class="notes">
+                            This is <u>the first time</u> the eMMC ever responded in my device; up until now, I sent commands but seen no response.
+                        </aside>
                     </textarea>
                 </section>
 
@@ -973,6 +1083,10 @@ for (unsigned addr = 0; addr &lt;= 0x80000; addr += 4) {
                         7. Write sboot to eMMC's boot partition
                         8. ???  <!-- .element class="fragment" data-fragment-index="0" -->
                         9. PROFIT  <!-- .element class="fragment" data-fragment-index="0" -->
+
+                        <aside class="notes">
+                            And the last step is to profit, which obviously means... it's demo time
+                        </aside>
                     </textarea>
                 </section>
 
