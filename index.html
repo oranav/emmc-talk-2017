@@ -47,7 +47,7 @@
                     December 2017
                 </section>
 
-                <section data-markdown>
+                <section data-markdown data-timing="120">
                     <textarea data-template>
                         ## Who am I?
                         - Oran Avraham, 25
@@ -62,7 +62,7 @@
                     </textarea>
                 </section>
 
-                <section data-markdown>
+                <section data-markdown data-timing="20">
                     <textarea data-template>
                         ## Outline
 
@@ -90,7 +90,7 @@
                     <h2 style="color:#fd4956">"Sudden Death Syndrome"</h2>
                 </section>
 
-                <section data-markdown>
+                <section data-markdown data-timing="30">
                     <textarea data-template>
                         Back in late 2012, Samsung Galaxy S3 (GT-I9300) phones started dying with no apparent reason
 
@@ -102,11 +102,11 @@
                     </textarea>
                 </section>
 
-                <section>
+                <section data-timing="20">
                     <img class="stretch" src="resources/xdarant.png" />
                 </section>
 
-                <section>
+                <section data-timing="20">
                     <h2>Spoiler alert: they did</h2>
                     <span class="fragment">(Well, kind of...)</span>
                 </section>
@@ -130,15 +130,15 @@
                     <img class="plain stretch" src="resources/s3-booting.png" />
                 </section>
 
-                <section>
+                <!--<section>
                     <h2>Or maybe this.</h2>
                     <img class="plain stretch" src="resources/s3-lpm.png" />
-                </section>
+                </section>-->
 
-                <section>
+                <!--<section>
                     <h2>You also get "download mode".</h2>
                     <img class="plain stretch" src="resources/s3-warning.png" />
-                </section>
+                </section>-->
 
                 <section>
                     <h2>You also get "download mode".</h2>
@@ -162,7 +162,7 @@
                     </textarea>
                 </section>
 
-                <section>
+                <section data-timing="30">
                     <p>Then, samsung dropped a patch.</p>
                     <pre><code class="cpp" data-trim data-noescape>
     if (!strncmp(host-&gt;card-&gt;cid.prod_name, "VTU00M", 6) &amp;&amp;
@@ -184,8 +184,9 @@
                     <h2 style="color:#fd4956"><span style="text-transform:none;">e</span>MMC bus introduction</h2>
                 </section>
 
-                <section>
-                    <p>eMMC is basically SD card in BGA form</p>
+                <section data-timing="60">
+                    <p>eMMC is the de-facto standard storage for phones</p>
+                    <p>SD card in BGA form</p>
                     <p>
                         <img src="resources/emmc-reader-1.jpg" height="150px" style="margin-right:20px" /><img src="resources/emmc-reader-2.jpg" height="150px" /><br/>
                         <small><i>HardKernel ODROID eMMC reader board</i></small>
@@ -193,14 +194,13 @@
                     <p>Essentially a NAND flash chip with convenient bus</p>
                 </section>
 
-                <section>
+                <section data-timing="60">
                     <div class="align">
                         <p>
                             64 commands (CMD0, CMD1, ..., CMD63), e.g.:
                             <small><ul>
                                 <li>CMD17: READ_SINGLE_BLOCK</li>
                                 <li>CMD24: WRITE_BLOCK</li>
-                                <li>CMD38: ERASE</li>
                             </ul></small>
                         </p>
                         <p>32-bit argument</p>
@@ -210,7 +210,7 @@
                     </div>
                 </section>
 
-                <section>
+                <section data-timing="30">
                     <p>Back to the patch</p>
                     <pre><code class="cpp" data-trim data-noescape>
     if (!strncmp(host->card->cid.prod_name, "VTU00M", 6) &&
@@ -249,7 +249,7 @@ int mmc_start_movi_smart(struct mmc_card *card)
                     <span class="fragment" data-fragment-index="0"><code>mmc_movi_cmd</code> is basically eMMC CMD62</span>
                 </section>-->
 
-                <section>
+                <section data-timing="90">
                     <pre style="width:100%"><code class="cpp" data-trim data-noescape>
 int mmc_start_movi_operation(struct mmc_card *card)
 {
@@ -274,7 +274,7 @@ int mmc_start_movi_operation(struct mmc_card *card)
                     <p>(next to a Thumb™)</p>
                 </section>
 
-                <section>
+                <section data-timing="20">
                     <h2>How S3 works</h2>
                     <img class="plain" src="resources/schematic_2.svg" />
                 </section>
@@ -292,7 +292,7 @@ int mmc_start_movi_operation(struct mmc_card *card)
                     Please prepare your C skillz.
                 </section>
 
-                <section>
+                <section data-timing="30">
                     <pre><code class="cpp" data-trim data-noescape>
                     void sub_40300()
                     {
@@ -303,22 +303,22 @@ int mmc_start_movi_operation(struct mmc_card *card)
                     <img src="resources/patch-disasm.png" height="400px" /><br />
                 </section>
 
-                <section>
+                <!--<section>
                     <h2>The other patch</h2>
                     <pre><code class="arm" data-trim>
                     0x5C7EA:    BL 0x40300
                     </code></pre>
                     Essentially a <code>jmp</code> to the first patch.
-                </section>
+                </section>-->
 
-                <section data-background="resources/fingerquotes.jpg">
+                <section data-background="resources/fingerquotes.jpg" data-timing="30">
                     <div class="stretch" style="-webkit-text-stroke:2px black">
                         <h2>DEAR S3 CUSTOMERS</h2>
                         <h2 style="position:absolute;bottom:0;text-align:center;width:100%">WE "FIXED" IT</h2>
                     </div>
                 </section>
 
-                <section>
+                <section data-timing="30">
                     <img src="resources/freeze.png" />
 
                     <blockquote class="fragment" style="width:100%" cite="https://forum.xda-developers.com/galaxy-s3/general/ultimate-galaxy-s3-unusual-freezing-t2133401">
@@ -341,7 +341,7 @@ int mmc_start_movi_operation(struct mmc_card *card)
                     </textarea>
                 </section>
 
-                <section data-markdown>
+                <section data-markdown data-timing="30">
                     <textarea data-template>
                         ## How to get a firmware?
 
@@ -351,7 +351,7 @@ int mmc_start_movi_operation(struct mmc_card *card)
                     </textarea>
                 </section>
 
-                <section>
+                <section data-timing="30">
                     So I Googled <code>0xEFAC62EC 0x10210000</code>
                     <pre class="fragment" data-fragment-index="0"><code class="cpp" data-trim>
     mmc_movi_vendor_cmd(card, 0xEFAC62EC);
@@ -369,7 +369,7 @@ int mmc_start_movi_operation(struct mmc_card *card)
                     <p class="fragment" data-fragment-index="1">But there was something else afterwards...</p>
                 </section>
 
-                <section>
+                <section data-timing="60">
                     <pre><code class="cpp" data-trim data-noescape>
 #ifdef TEST_MMC_FW_PATCHING
     mmc_movi_vendor_cmd(card, 0xEFAC62EC);
@@ -388,7 +388,7 @@ int mmc_start_movi_operation(struct mmc_card *card)
                 <!--<section data-background="resources/allthememe.jpg">
                 </section>-->
 
-                <section>
+                <section data-timing="20">
                     <pre><code class="cpp" data-trim>
 for (unsigned addr = 0; addr &lt;= 0x80000; addr += 4) {
     mmc_movi_vendor_cmd(card, 0xEFAC62EC);
@@ -403,21 +403,17 @@ for (unsigned addr = 0; addr &lt;= 0x80000; addr += 4) {
                     </code></pre>
                 </section>
 
-                <section>
-                    Success! Looks like a firmware!
+                <section data-background="resources/firmware.png" data-background-size="contain" data-background-color="#2d2d2d" data-timing="30">
                 </section>
 
-                <section data-background="resources/firmware.png" data-background-size="contain" data-background-color="#2d2d2d">
-                </section>
-
-                <section>
+                <section data-timing="20">
                     <h2>Reversing the firmware?</h2>
                     The firmware contained <span class="fragment strike" data-fragment-index="0">strings!</span>
                     <span class="fragment" data-fragment-index="0">a string :-(</span></p>
                     <pre class="fragment"><code>"REL_ASSERT : (PC[%x] SP[%x] LR[%x])\n"</code></pre>
                 </section>
 
-                <section>
+                <!--<section data-timing="60">
                     <h2>Reversing the firmware</h2>
 
                     <p>CPU seems to be ARM Cortex-M3 (only Thumb!)</p>
@@ -425,12 +421,12 @@ for (unsigned addr = 0; addr &lt;= 0x80000; addr += 4) {
                     <p class="fragment">Found a table of 64 entries - command handlers</p>
                     <p class="fragment">Worked my way to reverse most of the relevant code</p>
                     <p class="fragment">A <b>lot</b> of MMIO registers of unknown hardware</p>
-                </section>
+                </section>-->
 
-                <section data-background="resources/firmware_cmdhandlers.png" data-background-size="contain" data-background-color="#2d2d2d">
-                </section>
+                <!--<section data-background="resources/firmware_cmdhandlers.png" data-background-size="contain" data-background-color="#2d2d2d">
+                </section>-->
 
-                <section data-background="resources/firmware_cmd62.png" data-background-size="contain" data-background-color="#2d2d2d">
+                <section data-background="resources/firmware_cmd62.png" data-background-size="contain" data-background-color="#2d2d2d" data-timing="30">
                 </section>
 
                 <section data-markdown>
@@ -449,20 +445,20 @@ for (unsigned addr = 0; addr &lt;= 0x80000; addr += 4) {
                     <h2 style="color:#333;">eMMC Internals</h2>
                 </section>
 
-                <section>
+                <section data-timing="10">
                     <h2>Normal storage</h2>
 
                     <ul>
-                        <li>Read: <span class="fragment">read data</span></li>
-                        <li>Write: <span class="fragment">write data</span></li>
+                        <li>Read: read data</li>
+                        <li>Write: write data</li>
                     </ul>
                 </section>
 
-                <section>
+                <section data-timing="45">
                     <h2>NAND flash storage</h2>
 
                     <ul>
-                        <li>Read: <span class="fragment">read data</span></li>
+                        <li>Read: read data</li>
                         <li>Write: <span class="fragment">turn off bits (1&#8594;0)</span></li>
                         <li>Erase: <span class="fragment">erase a whole <i>erase-block</i> (0&#8594;1)</span></li>
                     </ul>
@@ -470,7 +466,7 @@ for (unsigned addr = 0; addr &lt;= 0x80000; addr += 4) {
                     <p class="fragment">Erase-blocks have a limited <i>program/erase</i> cycles</p>
                 </section>
 
-                <section>
+                <section data-timing="60">
                     <h2>Flash translation layer</h2>
 
                     <p>Firmware is responsible for:</p>
@@ -483,7 +479,7 @@ for (unsigned addr = 0; addr &lt;= 0x80000; addr += 4) {
                     <img style="height:280px" src="resources/ftl.png" />
                 </section>
 
-                <section>
+                <section data-timing="45">
                     <h2> VTU00M 0<span style="text-transform:none">x</span>F1 bug 🐞</h2>
 
                     <div class="align">
@@ -541,39 +537,39 @@ for (unsigned addr = 0; addr &lt;= 0x80000; addr += 4) {
                     </textarea>
                 </section>
 
-                <section>
+                <section data-timing="40">
                     <h2>eMMC Memory layout</h2>
 
                     <img class="plain stretch" src="resources/memory-layout.png" />
                 </section>
 
-                <section>
+                <section data-timing="60">
                     <h2>Boot ROM</h2>
                     <p>Initializes hardware and loads firmware *<b>from flash</b>*</p>
                     <p>Has its own machinery for eMMC commands<br/>(when firmware loading fails)</p>
                     <p>Basically a stripped down firmware (no FTL)</p>
                 </section>
 
-                <section>
+                <section data-timing="30">
                     <h2>How S3 works</h2>
                     <img class="plain" src="resources/schematic_3.svg" />
                 </section>
 
-                <section>
+                <section data-timing="30">
                     <p>If only we could talk to the boot ROM...</p>
                     <p>However, firmware loading actually <i>succeeds</i></p>
                     <p>Firmware executes, enters a loop &#8658; no chance</p>
                     <p class="fragment"><i>Right?</i></p>
                 </section>
 
-                <section>
+                <section data-timing="60">
                     <p>On boot (<code>sub_7DBC</code>), a timer is being set for 35ms</p>
                     <p>If during this period some interrupt fires - <br/>
                     a value (MMIO) is compared to <code>0x69FF87A9</code></p>
                     <p>In that case - firmware loading is skipped!</p>
                 </section>
 
-                <section>
+                <section data-timing="30">
                     <img class="plain stretch" src="resources/emmc_boot.svg" />
                 </section>
 
@@ -597,7 +593,7 @@ for (unsigned addr = 0; addr &lt;= 0x80000; addr += 4) {
                     </textarea>
                 </section>
 
-                <section>
+                <section data-timing="20">
                     <h3>Wait, what?</h3>
 
                     <p>Phone is dead. How do we even talk with the eMMC?</p>
@@ -625,36 +621,36 @@ for (unsigned addr = 0; addr &lt;= 0x80000; addr += 4) {
                     <p>But how?</p>
                 </section>
 
-                <section>
+                <section data-timing="40">
                     <h2>How S3 works</h2>
                     <img class="plain" src="resources/schematic_4.svg" />
                 </section>
 
-                <section>
+                <section data-timing="40">
                     <p>A friend had a bricked S3 which *<strong>does load</strong>* sboot</p>
                     <p>eMMC has two partitions: boot and user</p>
                     <p>Only user's metadata was corrupted</p>
                     <p>I suspect this is a common scenario</p>
                 </section>
 
-                <section>
+                <section data-timing="30">
                     <h2>How S3 breaks</h2>
                     <img class="plain" src="resources/schematic_5.svg" />
                 </section>
 
-                <section data-markdown>
+                <section data-markdown data-timing="20">
                     <textarea data-template>
                         ## Broken boot process
 
-                        1. Exynos reads boot partition from eMMC
-                        2. Exynos executes sboot
-                        3. sboot tries to access user partition
-                        4. eMMC's CPU raises an exception
-                        5. sboot gets no answer - timeout
+                        Exynos loads sboot from eMMC's boot
+
+                        sboot tries to load Linux
+
+                        eMMC parses user metadata - *boom*
                     </textarea>
                 </section>
 
-                <section>
+                <section data-timing="40">
                     <p>sboot has a DFU mode called "download mode"</p>
                     <p>Protocol over USB; Loke &#x27f7; Odin</p>
                     <p>No way of sending low-level eMMC commands</p>
@@ -665,7 +661,7 @@ for (unsigned addr = 0; addr &lt;= 0x80000; addr += 4) {
                     <h2 style="color:#fd4956">sboot Exploitation</h2>
                 </section>
 
-                <section>
+                <section data-timing="60">
                     <h3>Taken from sboot PIT packets handling</h3>
                     <pre class="stretch"><code class="cpp" data-trim data-noescape>
       if (is_dump == 1) {
@@ -685,7 +681,7 @@ for (unsigned addr = 0; addr &lt;= 0x80000; addr += 4) {
                     </code></pre>
                 </section>
 
-                <section>
+                <section data-timing="40">
                     <h2>sboot vulnerabilities</h2>
                     <ol>
                         <li>Heap relative read</li>
@@ -695,16 +691,16 @@ for (unsigned addr = 0; addr &lt;= 0x80000; addr += 4) {
                     <p>Unpatched for S3, but silently fixed in recent devices</p>
                 </section>
 
-                <section>
+                <section data-timing="60">
                     <h2>sboot heap implementation</h2>
 
-                    <p>*All* chunks are saved in circular doubly-linked list</p>
-                    <p>Choose first best fit</p>
-                    <p>Split chunks <strong>from the end</strong></p>
+                    <!--<p>*All* chunks are saved in circular doubly-linked list</p>
+                    <p>Choose first best fit</p>-->
+                    <p>Split large chunks <strong>from the end</strong></p>
                     <p>No security mitigations at all :-)</p>
                 </section>
 
-                <section>
+                <!--<section data-timing="120">
                     <div style="position:fixed;top:10%" class="fragment">malloc(0x50)</div>
                     <div style="position:relative;display:inline-block">
                         <img class="plain" src="resources/sboot_heap.svg" />
@@ -733,17 +729,17 @@ for (unsigned addr = 0; addr &lt;= 0x80000; addr += 4) {
                             <rect width="200" height="100" style="fill:transparent;stroke-width:20;stroke:#1b91ff" />
                         </svg>
                     </div>
-                </section>
+                </section>-->
 
-                <section>
+                <section data-timing="20">
                     <img class="plain" src="resources/sboot_heap_2.svg" />
                 </section>
 
-                <section>
+                <section data-timing="20">
                     <img class="plain" src="resources/sboot_heap_3.svg" style="padding-right:109px" />
                 </section>
 
-                <section>
+                <section data-timing="120">
                     <h3>Exploitation strategy</h3>
 
                     <p class="align"><u>Goal</u>: achieve write-what-where<br />
@@ -758,7 +754,7 @@ for (unsigned addr = 0; addr &lt;= 0x80000; addr += 4) {
                     </ol>
                 </section>
 
-                <section>
+                <!--<section>
                     <h2>Exploitation example</h2>
                     <ul>
                         <li>Fake chunk is at address <code>0x1337000</code></li>
@@ -767,7 +763,7 @@ for (unsigned addr = 0; addr &lt;= 0x80000; addr += 4) {
                         <li class="fragment">Set <code>size = 0xDEADBEEF-0x13370000+0x100</code></li>
                         <li class="fragment"><code>malloc(0x100)</code> returns<br /><code>0x13370000 + size - 0x100<br /><span class="fragment">= 0xDEADBEEF</span></code></li>
                     </ul>
-                </section>
+                </section>-->
 
                 <section data-markdown>
                     <textarea data-template>
@@ -791,12 +787,12 @@ for (unsigned addr = 0; addr &lt;= 0x80000; addr += 4) {
                     <img class="plain" src="resources/schematic_6.svg" />
                 </section>
 
-                <section>
+                <section data-timing="30">
                     <h2>How S3 almost breaks</h2>
                     <img class="plain" src="resources/schematic_7.svg" />
                 </section>
 
-                <section data-markdown>
+                <section data-markdown data-timing="40">
                     <textarea data-template>
                         ## Exynos boot process
 
@@ -807,7 +803,7 @@ for (unsigned addr = 0; addr &lt;= 0x80000; addr += 4) {
                     </textarea>
                 </section>
 
-                <section data-markdown>
+                <section data-markdown data-timing="20">
                     <textarea data-template>
                         ## Loading order
 
@@ -817,7 +813,7 @@ for (unsigned addr = 0; addr &lt;= 0x80000; addr += 4) {
                     </textarea>
                 </section>
 
-                <section>
+                <section data-timing="60">
                     <h2>Booting from SD card</h2>
                     <div class="align">
                         <p>sboot boots into <i>"SDCARD mode"</i> - no USB :-(</p>
@@ -833,7 +829,7 @@ for (unsigned addr = 0; addr &lt;= 0x80000; addr += 4) {
                     </small></p>
                 </section>
 
-                <section data-markdown>
+                <section data-markdown data-timing="30">
                     <textarea data-template>
                         ## Modified boot process
 
@@ -862,16 +858,6 @@ for (unsigned addr = 0; addr &lt;= 0x80000; addr += 4) {
 
                 <section data-markdown>
                     <textarea data-template>
-                        Got code execution on Exynos either way
-
-                        Let's try and talk to eMMC's boot ROM
-
-                        Remember? 0x69FF87A9...
-                    </textarea>
-                </section>
-
-                <section data-markdown>
-                    <textarea data-template>
                         ## Outline
 
                         1. Introduction  <!-- .element class="muted" -->
@@ -885,7 +871,17 @@ for (unsigned addr = 0; addr &lt;= 0x80000; addr += 4) {
                     </textarea>
                 </section>
 
-                <section>
+                <section data-markdown data-timing="20">
+                    <textarea data-template>
+                        Got code execution on Exynos either way
+
+                        Let's try and talk to eMMC's boot ROM
+
+                        Remember? 0x69FF87A9...
+                    </textarea>
+                </section>
+
+                <section data-timing="60">
                     <h3>Repeat for x:</h3>
                     <ol>
                         <li>Power off eMMC</li>
@@ -902,7 +898,7 @@ for (unsigned addr = 0; addr &lt;= 0x80000; addr += 4) {
                     </div>
                 </section>
 
-                <section data-markdown>
+                <section data-markdown data-timing="20">
                     <textarea data-template>
                         eMMC responds for the first time! ✌
 
@@ -916,7 +912,7 @@ for (unsigned addr = 0; addr &lt;= 0x80000; addr += 4) {
                     <h1 style="color:#fd4956"><span style="text-transform:none;">e</span>MMC repairing</h1>
                 </section>
 
-                <section>
+                <section data-timing="60">
                     <p>There are two revisions of VTU00M:</p>
                     <ul>
                         <li>Firmware 0xf1 - buggy</li>
@@ -926,7 +922,7 @@ for (unsigned addr = 0; addr &lt;= 0x80000; addr += 4) {
                     <p><strong>Goal:</strong> Update chip to 0xf7 and format FTL metadata</p>
                 </section>
 
-                <section data-markdown>
+                <section data-markdown data-timing="30">
                     <textarea data-template>
                         ## f7 dump
 
@@ -938,7 +934,7 @@ for (unsigned addr = 0; addr &lt;= 0x80000; addr += 4) {
                     </textarea>
                 </section>
 
-                <section data-markdown>
+                <section data-markdown data-timing="30">
                     <textarea data-template>
                         ## eMMC firmware upgrade
 
@@ -950,7 +946,7 @@ for (unsigned addr = 0; addr &lt;= 0x80000; addr += 4) {
                     </textarea>
                 </section>
 
-                <section data-markdown>
+                <section data-markdown data-timing="60">
                     <textarea data-template>
                         ## CMD60 firmware upgrade
 
@@ -964,19 +960,7 @@ for (unsigned addr = 0; addr &lt;= 0x80000; addr += 4) {
                     </textarea>
                 </section>
 
-                <section data-markdown>
-                    <textarea data-template>
-                        ## Implementation
-
-                        * As I said, details are boring...
-
-                        * Details &amp; working code provided:
-
-                            https://github.com/oranav/i9300_sboot_exploit
-                    </textarea>
-                </section>
-
-                <section data-markdown>
+                <section data-markdown data-timing="60">
                     <textarea data-template>
                         ## Wrap-up
 
@@ -992,7 +976,7 @@ for (unsigned addr = 0; addr &lt;= 0x80000; addr += 4) {
                     </textarea>
                 </section>
 
-                <section data-markdown data-background-color="#360b00">
+                <section data-markdown data-background-color="#360b00" data-timing="240">
                     <textarea data-template>
                         # Demo time
                     </textarea>
@@ -1013,19 +997,17 @@ for (unsigned addr = 0; addr &lt;= 0x80000; addr += 4) {
                     </textarea>
                 </section>
 
-                <section data-markdown>
+                <!--<section data-markdown data-timing="60">
                     <textarea data-template>
                         ## Further research
 
                         * New eMMC / UFS devices
-                        * Restore data from a dead eMMC
-                        * Deep forensics (read raw flash, parse FTL metadata)
-                        * eMMC rootkit
+                        * Restore data (FTL metadata parser)
                         * Open-source alternative firmware
                     </textarea>
-                </section>
+                </section>-->
 
-                <section data-markdown>
+                <section data-markdown data-timing="60">
                     <textarea data-template>
                         ## Shout outs
 
@@ -1038,7 +1020,7 @@ for (unsigned addr = 0; addr &lt;= 0x80000; addr += 4) {
                     </textarea>
                 </section>
 
-                <section data-markdown data-background-color="#003626">
+                <section data-markdown data-background-color="#003626" data-timing="900">
                     <textarea data-template>
                         ## Questions &amp; Code 
 
@@ -1070,6 +1052,7 @@ for (unsigned addr = 0; addr &lt;= 0x80000; addr += 4) {
                 history: true,
                 transition: 'fade',
                 transitionSpeed: 'fast',
+                defaultTiming: 10,
 			});
 		</script>
 	</body>
