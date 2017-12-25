@@ -96,6 +96,8 @@
 
                 <section data-markdown data-timing="30">
                     <textarea data-template>
+                        ## Story
+
                         Back in late 2012, Samsung Galaxy S3 (GT-I9300) phones started dying with no apparent reason
 
                         If you're lucky, phone boots into bootloader <!-- .element: class="fragment" -->
@@ -150,7 +152,7 @@
                 </section>
 
                 <section>
-                    <h2>How S3 works</h2>
+                    <h2>How S3 works (take 1)</h2>
                     <img class="plain" src="resources/schematic_1.svg" />
 
                     <aside class="notes">
@@ -188,6 +190,7 @@
                     </small></p>
 
                     <aside class="notes">
+                        Samsung said this fixes the brick bug<br />
                         Don't talk about the patch yet! Mention only the MMC subsystem
                     </aside>
                 </section>
@@ -197,6 +200,7 @@
                 </section>
 
                 <section data-timing="60">
+                    <h2>Embedded Multimedia Card</h2>
                     <p>eMMC is the de-facto standard storage for phones</p>
                     <p>SD card in BGA form</p>
                     <p>
@@ -211,6 +215,7 @@
                 </section>
 
                 <section data-timing="60">
+                    <h2>eMMC commands</h2>
                     <div class="align">
                         <p>
                             64 commands (CMD0, CMD1, ..., CMD63), e.g.:
@@ -289,7 +294,7 @@ int mmc_start_movi_operation(struct mmc_card *card)
                     <span class="fragment" data-fragment-index="1"><code>mmc_movi_cmd</code> is basically eMMC CMD62</span>
 
                     <aside class="notes" data-markdown>
-                        1. Why is there an erase?
+                        1. Why is there an erase? Probably not really
                         2. movi_cmd is 62
                         3. Enter/leave secret backdoor
                         4. Consecutive numbers (first argument)
@@ -306,7 +311,7 @@ int mmc_start_movi_operation(struct mmc_card *card)
                 </section>
 
                 <section data-timing="20">
-                    <h2>How S3 works</h2>
+                    <h2>How S3 works (take 2)</h2>
                     <img class="plain" src="resources/schematic_2.svg" />
                 </section>
 
@@ -316,6 +321,13 @@ int mmc_start_movi_operation(struct mmc_card *card)
                         <h2 style="position:absolute;bottom:0;text-align:center;width:100%">THERE'S AN ARM INSIDE YOUR EMMC</h2>
                     </div>
                 </section>-->
+
+                <section data-timing="10">
+                    <h2>patch.bin</h2>
+                    <pre><code data-trim class="nohighlight" style="background:#3f3f3f">
+                            10 B5 03 4A 90 47 00 28 00 D1 FE E7 10 BD 00 00 73 9D 05 00
+                    </code></pre>
+                </section>
 
                 <section>
                     <h2>Lo and behold...</h2>
@@ -535,7 +547,7 @@ for (unsigned addr = 0; addr &lt;= 0x80000; addr += 4) {
                 </section>
 
                 <section data-timing="60">
-                    <h2>Flash translation layer</h2>
+                    <h2>Flash translation layer - FTL</h2>
 
                     <p>Firmware is responsible for:</p>
                     <ul>
@@ -554,12 +566,13 @@ for (unsigned addr = 0; addr &lt;= 0x80000; addr += 4) {
                 <section data-timing="45">
                     <h2> VTU00M 0<span style="text-transform:none">x</span>F1 bug 🐞</h2>
 
+                    <p>FTL has to modify metadata on writes.</p>
+
                     <div class="align">
-                        <p>FTL metadata gets corrupted once</p>
+                        <p class="fragment">FTL metadata gets corrupted once due to a bug</p>
                         <p class="fragment">&#8658; On each boot, FTL raises a CPU exception</p>
                         <p class="fragment">&#8658; CPU enters an infinite loop</p>
                         <p class="fragment">&#8658; eMMC is essentially dead</p>
-                        <br/>
                         <p class="fragment">Samsung's patch: Metadata about to get corrupted? Halt CPU!</p>
                     </div>
                 </section>
@@ -627,7 +640,7 @@ for (unsigned addr = 0; addr &lt;= 0x80000; addr += 4) {
                 </section>
 
                 <section data-timing="30">
-                    <h2>How S3 works</h2>
+                    <h2>How S3 works (take 3)</h2>
                     <img class="plain" src="resources/schematic_3.svg" />
                 </section>
 
@@ -639,6 +652,7 @@ for (unsigned addr = 0; addr &lt;= 0x80000; addr += 4) {
                 </section>
 
                 <section data-timing="60">
+                    <h2>Interrupt #7</h2>
                     <p>On boot (<code>sub_7DBC</code>), a timer is being set for 35ms</p>
                     <p>If during this period some interrupt fires - <br/>
                     a value (MMIO) is compared to <code>0x69FF87A9</code></p>
@@ -707,7 +721,7 @@ for (unsigned addr = 0; addr &lt;= 0x80000; addr += 4) {
                 </section>
 
                 <section data-timing="40">
-                    <h2>How S3 works</h2>
+                    <h2>How S3 works (take 4)</h2>
                     <img class="plain" src="resources/schematic_4.svg" />
 
                     <aside class="notes">
@@ -1023,6 +1037,7 @@ for (unsigned addr = 0; addr &lt;= 0x80000; addr += 4) {
                 </section>
 
                 <section data-timing="60">
+                    <h2>New firmware</h2>
                     <p>There are two revisions of VTU00M:</p>
                     <ul>
                         <li>Firmware 0xf1 - buggy</li>
@@ -1134,6 +1149,21 @@ for (unsigned addr = 0; addr &lt;= 0x80000; addr += 4) {
                     </textarea>
                 </section>
 
+                <section data-markdown data-timing="20">
+                    <textarea data-template>
+                        ## Conclusion
+
+                        * Can pwn Samsung eMMCs
+
+                        * Can fix bricked S3 with software
+
+                        * However, this is just a use case...
+
+                        * Newer eMMCs? UFS?
+                    </textarea>
+                </section>
+
+                <!--
                 <section data-markdown data-background-color="#003626" data-timing="900">
                     <textarea data-template>
                         ## Questions &amp; Code 
@@ -1148,6 +1178,20 @@ for (unsigned addr = 0; addr &lt;= 0x80000; addr += 4) {
 
                             https://github.com/oranav/emmc-talk-2017
                     </textarea>
+                -->
+
+                <section data-markdown data-background-color="#003626" data-timing="900">
+                    <textarea data-template>
+                        ## Questions &amp; Code
+
+                        * sboot exploit, shellcode &amp; eMMC related stuff
+
+                            https://github.com/oranav/i9300_emmc_toolbox
+                        * Slides
+
+                            https://github.com/oranav/emmc-talk-2017
+                    </textarea>
+                </section>
                 </section>
 			</div>
 		</div>
