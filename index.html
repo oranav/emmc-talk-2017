@@ -4,7 +4,7 @@
 		<meta charset="utf-8">
 		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 
-        <title>eMMC Hacking 2017</title>
+        <title>eMMC Hacking 2018</title>
 
 		<link rel="stylesheet" href="css/reveal.css">
 		<link rel="stylesheet" href="css/theme/moon.css">
@@ -44,10 +44,10 @@
                     <h1><span style='text-transform:none;'>e</span>MMC Hacking</h1>
                     <h3 style='text-transform:none;'>(or: how I fixed long dead Galaxy S3 phones)</h3>
                     Oran Avraham<br />
-                    December 2017
+                    January 2018
                 </section>
 
-                <section data-markdown data-timing="120">
+                <section data-markdown data-timing="100">
                     <textarea data-template>
                         ## Who am I?
                         - Oran Avraham, 25
@@ -519,7 +519,7 @@ for (unsigned addr = 0; addr &lt;= 0x80000; addr += 4) {
                     <h2 style="color:#333;">eMMC Internals</h2>
                 </section>
 
-                <section data-timing="10">
+                <!--<section data-timing="10">
                     <h2>Normal storage</h2>
 
                     <ul>
@@ -544,7 +544,7 @@ for (unsigned addr = 0; addr &lt;= 0x80000; addr += 4) {
                         - Erase block - a megabyte or so
                         - Maybe thousand up to hundred thousand erase cycles
                     </aside>
-                </section>
+                </section>-->
 
                 <section data-timing="60">
                     <h2>Flash translation layer - FTL</h2>
@@ -584,7 +584,7 @@ for (unsigned addr = 0; addr &lt;= 0x80000; addr += 4) {
                     </div>
                 </section>
 
-                <section data-markdown>
+                <!--<section data-markdown>
                     <textarea data-template>
                         ## Recap
 
@@ -598,7 +598,7 @@ for (unsigned addr = 0; addr &lt;= 0x80000; addr += 4) {
 
                         * Samsung's patch: just before the corruption, halt eMMC
                     </textarea>
-                </section>
+                </section>-->
 
                 <section data-markdown>
                     <textarea data-template>
@@ -798,16 +798,16 @@ for (unsigned addr = 0; addr &lt;= 0x80000; addr += 4) {
                     <p>Unpatched for S3, but silently fixed in recent devices</p>
                 </section>
 
-                <section data-timing="60">
+                <!--<section data-timing="60">
                     <h2>sboot heap implementation</h2>
 
-                    <!--<p>*All* chunks are saved in circular doubly-linked list</p>
-                    <p>Choose first best fit</p>-->
+                    <p>*All* chunks are saved in circular doubly-linked list</p>
+                    <p>Choose first best fit</p>
                     <p>Split large chunks <strong>from the end</strong></p>
                     <p>No security mitigations at all :-)</p>
                 </section>
 
-                <!--<section data-timing="120">
+                <section data-timing="120">
                     <div style="position:fixed;top:10%" class="fragment">malloc(0x50)</div>
                     <div style="position:relative;display:inline-block">
                         <img class="plain" src="resources/sboot_heap.svg" />
@@ -836,7 +836,7 @@ for (unsigned addr = 0; addr &lt;= 0x80000; addr += 4) {
                             <rect width="200" height="100" style="fill:transparent;stroke-width:20;stroke:#1b91ff" />
                         </svg>
                     </div>
-                </section>-->
+                </section>
 
                 <section data-timing="20">
                     <img class="plain" src="resources/sboot_heap_2.svg" />
@@ -861,7 +861,7 @@ for (unsigned addr = 0; addr &lt;= 0x80000; addr += 4) {
                     </ol>
                 </section>
 
-                <!--<section>
+                <section>
                     <h2>Exploitation example</h2>
                     <ul>
                         <li>Fake chunk is at address <code>0x1337000</code></li>
@@ -908,9 +908,9 @@ for (unsigned addr = 0; addr &lt;= 0x80000; addr += 4) {
                         ## Exynos boot process
 
                         1. Exynos boot ROM
-                        2. 1bl (signed)
-                        3. sboot (signed)
-                        4. Kernel
+                        2. 1bl (eMMC boot)
+                        3. sboot (eMMC boot)
+                        4. Kernel (eMMC user)
 
                         <aside class="notes">
                             1bl is prepended to sboot, and should bootstrap it<br />
@@ -929,7 +929,7 @@ for (unsigned addr = 0; addr &lt;= 0x80000; addr += 4) {
                     </textarea>
                 </section>
 
-                <section data-timing="60">
+                <!--<section data-timing="60">
                     <h2>Booting from SD card</h2>
                     <div class="align">
                         <p>sboot boots into <i>"SDCARD mode"</i> - no USB :-(</p>
@@ -943,15 +943,15 @@ for (unsigned addr = 0; addr &lt;= 0x80000; addr += 4) {
                         <a href="https://github.com/dmarszk/exynos4_uboot">https://github.com/dmarszk/exynos4_uboot</a><br />
                         <i>AdamOutler, Rebellos, Ralekdev</i>
                     </small></p>
-                </section>
+                </section>-->
 
                 <section data-markdown data-timing="30">
                     <textarea data-template>
                         ## Modified boot process
 
                         1. Exynos boot ROM
-                        2. ODROID-X 1bl from SD card (signed)
-                        3. Patched sboot from SD card
+                        2. 1bl (SD card)
+                        3. sboot (SD card)
                         4. Shellcode via USB
                         
                         **No hardware mod required!**
@@ -1126,7 +1126,63 @@ for (unsigned addr = 0; addr &lt;= 0x80000; addr += 4) {
                     </textarea>
                 </section>
 
-                <!--<section data-markdown data-timing="60">
+                <section data-timing="30">
+                    <h2>New eMMCs and where to find them</h2>
+
+                    <p>Go over pictures of chinese development boards...</p>
+
+                    <div style="position:relative;display:inline-block">
+                        <img src="resources/orangepiplus2e.jpg" height="400" class="fragment" />
+                        <svg width="70" height="50" class="fragment" style="position:absolute;top:47%;left:47%;transform:rotate(119deg)">
+                            <rect width="70" height="50" style="fill:transparent;stroke-width:10;stroke:#fd4956" />
+                        </svg>
+                    </div>
+                </section>
+
+                <section data-timing="40" data-markdown>
+                    <textarea data-template>
+                        ## New firmware
+
+                        * CMD62(0x10210002) works!
+
+                        * Got the firmware
+
+                        * Some function calls just don't make sense...
+
+                            Jump to the middle of a function?
+                    </textarea>
+                </section>
+
+                <section data-timing="30" data-markdown>
+                    <textarea data-template>
+                        ## OVL function
+
+                        * Weird function calls are to high addresses
+
+                        * Before each such call, there's another function
+
+                        * The preceding function is always the same
+
+                        * The preceding function uses constants:
+                            * 'OVL0', 'OVL1', 'OVL2', 'OVL3'
+                    </textarea>
+                </section>
+
+                <section data-timing="60" data-markdown>
+                    <textarea data-template>
+                        ## Overlay mechanism
+
+                        Not enough ARM RAM to hold the firmware
+
+                        Some functions are stored in a *memory overlay*
+
+                        Before each call to such function, the correct overlay is loaded from the NAND...
+
+                        Work in progress
+                    </textarea>
+                </section>
+
+                <section data-markdown data-timing="30">
                     <textarea data-template>
                         ## Further research
 
@@ -1134,22 +1190,9 @@ for (unsigned addr = 0; addr &lt;= 0x80000; addr += 4) {
                         * Restore data (FTL metadata parser)
                         * Open-source alternative firmware
                     </textarea>
-                </section>-->
-
-                <section data-markdown data-timing="60">
-                    <textarea data-template>
-                        ## Shout outs
-
-                        * Rebellos, AdamOutler, Ralekdev - Exynos U-Boot and 1bl work
-
-                        * Entropy512 - Involved in eMMC research in 2013
-
-                        * bunnie &amp; xobs - wonderful 30C3 talk about hacking chinese SD cards
-                            * And for motivating me to complete this research!
-                    </textarea>
                 </section>
 
-                <section data-markdown data-timing="20">
+                <section data-markdown data-timing="40">
                     <textarea data-template>
                         ## Conclusion
 
@@ -1159,7 +1202,20 @@ for (unsigned addr = 0; addr &lt;= 0x80000; addr += 4) {
 
                         * However, this is just a use case...
 
-                        * Newer eMMCs? UFS?
+                        * Newer eMMCs - probably still suspectible
+                    </textarea>
+                </section>
+
+                <section data-markdown data-timing="40">
+                    <textarea data-template>
+                        ## Shout outs
+
+                        * Rebellos, AdamOutler, Ralekdev - Exynos U-Boot and 1bl work
+
+                        * Entropy512 - Involved in eMMC research in 2013
+
+                        * bunnie &amp; xobs - wonderful 30C3 talk about hacking chinese SD cards
+                            * And for motivating me to complete this research!
                     </textarea>
                 </section>
 
@@ -1180,7 +1236,7 @@ for (unsigned addr = 0; addr &lt;= 0x80000; addr += 4) {
                     </textarea>
                 -->
 
-                <section data-markdown data-background-color="#003626" data-timing="900">
+                <section data-markdown data-background-color="#003626" data-timing="300">
                     <textarea data-template>
                         ## Questions &amp; Code
 
@@ -1190,6 +1246,10 @@ for (unsigned addr = 0; addr &lt;= 0x80000; addr += 4) {
                         * Slides
 
                             https://github.com/oranav/emmc-talk-2017
+
+                        * Samsung eMMC Python tool (will be released later)
+
+                            https://github.com/oranav/movipwn
                     </textarea>
                 </section>
                 </section>
