@@ -630,6 +630,7 @@ for (unsigned addr = 0; addr &lt;= 0x80000; addr += 4) {
 
                 <section data-timing="60">
                     <h2>Boot ROM</h2>
+                    <p>Mask ROM (stored "in-silicon")</p>
                     <p>Initializes hardware and loads firmware *<b>from flash</b>*</p>
                     <p>Has its own machinery for eMMC commands<br/>(when firmware loading fails)</p>
                     <p>Basically a stripped down firmware (no FTL)</p>
@@ -903,7 +904,7 @@ for (unsigned addr = 0; addr &lt;= 0x80000; addr += 4) {
                     <img class="plain" src="resources/new/schematic_7.svg" />
                 </section>
 
-                <section data-markdown data-timing="40">
+                <!--<section data-markdown data-timing="40">
                     <textarea data-template>
                         ## Exynos boot process
 
@@ -927,7 +928,7 @@ for (unsigned addr = 0; addr &lt;= 0x80000; addr += 4) {
                         2. External SD card
                         3. UART
                     </textarea>
-                </section>
+                </section>-->
 
                 <!--<section data-timing="60">
                     <h2>Booting from SD card</h2>
@@ -945,16 +946,18 @@ for (unsigned addr = 0; addr &lt;= 0x80000; addr += 4) {
                     </small></p>
                 </section>-->
 
-                <section data-markdown data-timing="30">
-                    <textarea data-template>
-                        ## Modified boot process
+                <section data-timing="30">
+                    <h2>Modified boot process</h2>
 
-                        1. Exynos boot ROM
-                        2. 1bl (SD card)
-                        3. sboot (SD card)
-                        4. Shellcode via USB
+                    <p>Apparently, if boot partition is corrupt, it is possible to load sboot from an external SD card</p>
                         
-                        **No hardware mod required!**
+                    <b>No hardware mod required!</b>
+                    <p><small>
+                        <a href="https://forum.xda-developers.com/galaxy-s3/general/totally-revolutionary-sdcard-bootloader-t2061437">Totally Revolutionary SDCard Bootloader For Galaxy S III</a><br />
+                        <a href="https://forum.xda-developers.com/showthread.php?t=2023069">UnBrickable SD necromancy- Totally restore your device.</a><br />
+                        <a href="https://github.com/dmarszk/exynos4_uboot">https://github.com/dmarszk/exynos4_uboot</a><br />
+                        <i>AdamOutler, Rebellos, Ralekdev</i>
+                    </small></p>
                     </textarea>
                 </section>
 
@@ -1141,7 +1144,7 @@ for (unsigned addr = 0; addr &lt;= 0x80000; addr += 4) {
 
                 <section data-timing="40" data-markdown>
                     <textarea data-template>
-                        ## New firmware
+                        ## New eMMCs firmware
 
                         * CMD62(0x10210002) works!
 
@@ -1150,6 +1153,10 @@ for (unsigned addr = 0; addr &lt;= 0x80000; addr += 4) {
                         * Some function calls just don't make sense...
 
                             Jump to the middle of a function?
+
+                        <aside class="notes">
+                            Take it with a grain of salt
+                        <aside>
                     </textarea>
                 </section>
 
@@ -1165,6 +1172,11 @@ for (unsigned addr = 0; addr &lt;= 0x80000; addr += 4) {
 
                         * The preceding function uses constants:
                             * 'OVL0', 'OVL1', 'OVL2', 'OVL3'
+
+                        ```c
+                        ovl_function(0)
+                        weird_call()
+                        ```
                     </textarea>
                 </section>
 
@@ -1178,7 +1190,7 @@ for (unsigned addr = 0; addr &lt;= 0x80000; addr += 4) {
 
                         Before each call to such function, the correct overlay is loaded from the NAND...
 
-                        Work in progress
+                        Reversing - work in progress
                     </textarea>
                 </section>
 
@@ -1192,7 +1204,7 @@ for (unsigned addr = 0; addr &lt;= 0x80000; addr += 4) {
                     </textarea>
                 </section>
 
-                <section data-markdown data-timing="40">
+                <section data-markdown data-timing="30">
                     <textarea data-template>
                         ## Conclusion
 
